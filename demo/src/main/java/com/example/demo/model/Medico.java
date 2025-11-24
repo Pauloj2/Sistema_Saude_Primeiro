@@ -29,8 +29,7 @@ public class Medico {
 
     @Column(name = "ativo", nullable = false)
     private boolean ativo = true;
-
-    // GETTERS E SETTERS
+    
     public Long getId() {
         return id;
     }
