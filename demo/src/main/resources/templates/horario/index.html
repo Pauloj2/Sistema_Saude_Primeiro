@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Horários Disponíveis</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container pt-5">
+    <h1>Gerenciar Horários</h1>
+    <a th:href="@{/horarios/create}" class="btn btn-primary mb-3">Novo Horário</a>
+    <a th:href="@{/medico}" class="btn btn-secondary mb-3 ml-2">Voltar para Médicos</a>
+    
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Médico</th>
+                <th>Data/Hora</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="horario : ${horariosList}">
+                <td th:text="${horario.medico.nome}"></td>
+                <td th:text="${#temporals.format(horario.dataHora, 'dd/MM/yyyy HH:mm')}"></td>
+                <td>
+                    <span th:if="${horario.status == 'DISPONIVEL'}" class="badge badge-success">Disponível</span>
+                    <span th:if="${horario.status == 'AGENDADO'}" class="badge badge-warning">Agendado</span>
+                    <span th:if="${horario.status == 'CANCELADO'}" class="badge badge-danger">Cancelado</span>
+                </td>
+                <td>
+                    <a th:href="@{/horarios/edit/{id}(id=${horario.id})}" class="btn btn-warning btn-sm">Editar</a>
+                    <a th:href="@{/horarios/delete/{id}(id=${horario.id})}" class="btn btn-danger btn-sm"
+                       onclick="return confirm('Tem certeza que deseja excluir este horário?')">Excluir</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
