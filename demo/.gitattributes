@@ -1,2 +1,11 @@
 /mvnw text eol=lf
 *.cmd text eol=crlf
+
+# --- Regras para Detecção de Linguagem (Linguist) ---
+
+# Ignora pastas de build/vendor para que elas não sejam contadas
+node_modules/** linguist-vendored
+target/** linguist-vendored
+
+# Se houver algum arquivo que deveria ser reconhecido como uma linguagem, mas não é:
+# *.j2 linguist-language=Jinja # Exemplo: forçar arquivos .j2 a serem Jinja
