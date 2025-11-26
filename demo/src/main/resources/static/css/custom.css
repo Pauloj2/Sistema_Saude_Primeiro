@@ -1,0 +1,170 @@
+/* Sidebar Styles */
+.sidebar {
+    min-height: 100vh;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding: 0;
+}
+
+.sidebar .nav-link {
+    padding: 0.75rem 1rem;
+    color: rgba(255, 255, 255, 0.8);
+    transition: all 0.3s ease;
+}
+
+.sidebar .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.sidebar .nav-link.active {
+    background-color: #0d6efd;
+    color: white !important;
+    border-left: 3px solid #fff;
+}
+
+.sidebar .nav-link i {
+    width: 20px;
+}
+
+/* Main Content */
+.main-content {
+    margin-left: 0;
+    padding: 20px;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+/* Para desktop */
+@media (min-width: 992px) {
+    .main-content {
+        margin-left: 16.666667%; /* equivalente a col-lg-2 */
+    }
+}
+
+/* Estilos para o Dashboard */
+.stat-card {
+    text-align: center;
+    padding: 1.5rem;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+    height: 100%;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin: 0.5rem 0;
+}
+
+.welcome-section {
+    background: linear-gradient(135deg, #0d6efd, #0a58ca);
+    color: white;
+    border-radius: 10px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn-custom {
+    border-radius: 50px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+}
+
+/* Ajustes para cards */
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+/* Ajuste para os botões de ação */
+.btn-outline-primary.text-start {
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-primary.text-start:hover {
+    transform: translateX(5px);
+    background-color: #0d6efd;
+    color: white;
+}
+
+/* Offcanvas mobile */
+.offcanvas .nav-link {
+    padding: 0.75rem 1rem;
+    color: rgba(255, 255, 255, 0.8);
+    transition: all 0.3s ease;
+}
+
+.offcanvas .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+/* Hover effect para cards de estatísticas */
+.hover-card {
+    transition: all 0.3s ease;
+}
+
+.hover-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Animação suave para os números */
+.hover-card .fs-1 {
+    transition: all 0.3s ease;
+}
+
+.hover-card:hover .fs-1 {
+    transform: scale(1.1);
+}
+
+/* Estilo para botões de ação rápida */
+.btn-outline-primary.text-start {
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    border: 2px solid #e9ecef;
+}
+
+.btn-outline-primary.text-start:hover {
+    transform: translateX(8px);
+    background-color: #0d6efd;
+    color: white !important;
+    border-color: #0d6efd;
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+}
+
+.btn-outline-primary.text-start:hover .text-muted {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Welcome section com gradiente animado */
+.bg-primary {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%) !important;
+}
+
+/* Lista de recursos */
+.list-unstyled li {
+    transition: all 0.2s ease;
+}
+
+.list-unstyled li:hover {
+    transform: translateX(5px);
+}
