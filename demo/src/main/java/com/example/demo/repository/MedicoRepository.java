@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import com.example.demo.model.Medico;
 
 @Repository
-public interface MedicoRepository extends JpaRepository<Medico, Long>{
-    
+public interface MedicoRepository extends JpaRepository<Medico, Long> {
+    boolean existsByCrm(String crm);
 }

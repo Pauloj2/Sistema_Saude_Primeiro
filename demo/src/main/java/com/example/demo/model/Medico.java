@@ -1,11 +1,9 @@
 package com.example.demo.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+
+import java.util.Set;
 
 @Entity
 @Table(name = "medicos")
@@ -15,21 +13,29 @@ public class Medico {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "nome", nullable = false)
+    @NotBlank(message = "O nome é obrigatório.")
+    @Column(nullable = false)
     private String nome;
 
-    @Column(name = "crm", nullable = false, unique = true)
+    @NotBlank(message = "O CRM é obrigatório.")
+    @Column(nullable = false, unique = true)
     private String crm;
 
-    @Column(name = "especialidade", nullable = false)
+    @NotBlank(message = "A especialidade é obrigatória.")
+    @Column(nullable = false)
     private String especialidade;
 
-    @Column(name = "telefone", nullable = false)
+    @NotBlank(message = "O telefone é obrigatório.")
+    @Column(nullable = false)
     private String telefone;
 
-    @Column(name = "ativo", nullable = false)
+    @Column(nullable = false)
     private boolean ativo = true;
-    
+
+    @OneToMany(mappedBy = "medico", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<HorarioDisponivel> horariosDisponiveis;
+
+    // Getters e Setters
     public Long getId() {
         return id;
     }
@@ -76,5 +82,13 @@ public class Medico {
 
     public void setAtivo(boolean ativo) {
         this.ativo = ativo;
+    }
+
+    public Set<HorarioDisponivel> getHorariosDisponiveis() {
+        return horariosDisponiveis;
+    }
+
+    public void setHorariosDisponiveis(Set<HorarioDisponivel> horariosDisponiveis) {
+        this.horariosDisponiveis = horariosDisponiveis;
     }
 }
