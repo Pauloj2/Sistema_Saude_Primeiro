@@ -17,7 +17,6 @@ public class ConsultaServiceImpl implements ConsultaService {
 
     @Autowired
     private ConsultaRepository consultaRepository;
-
     @Autowired
     private HorarioDisponivelRepository horarioRepository;
 
@@ -73,7 +72,6 @@ public class ConsultaServiceImpl implements ConsultaService {
                 horarioRepository.save(horario);
             }
         }
-
         consultaRepository.deleteById(id);
     }
 
