@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Pacientes</title>
+</head>
+
+<body>
+    <h1>Lista de Pacientes</h1>
+
+    <a href="/pacientes/create">Cadastrar Novo Paciente</a>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>E-mail</th>
+                <th>CPF</th>
+                <th>Telefone</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr th:each="paciente : ${pacientesList}">
+                <td th:text="${paciente.id}"></td>
+                <td th:text="${paciente.nome}"></td>
+                <td th:text="${paciente.email}"></td>
+                <td th:text="${paciente.cpf}"></td>
+                <td th:text="${paciente.telefone}"></td>
+
+                <td>
+                    <a th:href="@{'/pacientes/edit/' + ${paciente.id}}">Editar</a> |
+                    <a th:href="@{'/pacientes/delete/' + ${paciente.id}}"
+                        onclick="return confirm('Deseja excluir este paciente?');">
+                        Excluir
+                    </a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+</body>
+
+</html>

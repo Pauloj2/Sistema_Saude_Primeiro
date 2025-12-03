@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Agendar Consulta</title>
+</head>
+
+<body>
+    <h1>Agendar Consulta</h1>
+
+    <p th:if="${mensagemSucesso}" th:text="${mensagemSucesso}" style="color:green"></p>
+    <p th:if="${mensagemErro}" th:text="${mensagemErro}" style="color:red"></p>
+
+    <form th:action="@{/consultas/save}" th:object="${consulta}" method="post">
+
+        <label>Médico:</label><br>
+        <select id="medicoSelect" name="medicoId" required>
+            <option value="">-- selecione --</option>
+            <option th:each="m : ${medicos}" th:value="${m.id}" th:text="${m.nome + ' — ' + m.especialidade}"></option>
+        </select>
+        <br><br>
+
+        <label>Horário disponível:</label><br>
+        <select id="horarioSelect" name="horarioId" required>
+            <option value="">-- selecione médico primeiro --</option>
+            <option th:each="h : ${horarios}" th:value="${h.id}"
+                th:text="${#temporals.format(h.dataHora, 'yyyy-MM-dd HH:mm') + ' — ' + h.medico.nome}"
+                th:attr="data-medico-id=${h.medico.id}">
+            </option>
+        </select>
+        <br><br>
+
+        <label>Paciente:</label><br>
+        <select name="pacienteId" required>
+            <option value="">-- selecione --</option>
+            <option th:each="p : ${pacientes}" th:value="${p.id}" th:text="${p.nome + ' — ' + p.cpf}"></option>
+        </select>
+        <br><br>
+
+        <label>Observações:</label><br>
+        <textarea th:field="*{observacoes}" rows="4" cols="50"></textarea>
+        <br><br>
+
+        <button type="submit">Agendar</button>
+        <a href="/consultas">Voltar</a>
+    </form>
+
+    <script>
+        const medicoSelect = document.getElementById('medicoSelect');
+        const horarioSelect = document.getElementById('horarioSelect');
+
+        medicoSelect.addEventListener('change', function () {
+            const medicoId = this.value;
+            const options = horarioSelect.querySelectorAll('option');
+
+            if (!medicoId) {
+                horarioSelect.innerHTML = '<option value="">-- selecione médico primeiro --</option>';
+                horarioSelect.disabled = true;
+                return;
+            }
+
+            horarioSelect.disabled = false;
+
+            let firstAdded = false;
+            horarioSelect.innerHTML = ''; 
+            const allOptions = Array.from(document.querySelectorAll('#horarioSelect option[data-medico-id]')).map(o => ({
+                val: o.value,
+                text: o.textContent,
+                medicoId: o.getAttribute('data-medico-id')
+            }));
+
+            allOptions.forEach(opt => {
+                if (opt.medicoId === medicoId) {
+                    const newOpt = document.createElement('option');
+                    newOpt.value = opt.val;
+                    newOpt.text = opt.text;
+                    horarioSelect.appendChild(newOpt);
+                    if (!firstAdded) { firstAdded = true; }
+                }
+            });
+
+            if (!firstAdded) {
+                horarioSelect.innerHTML = '<option value="">-- nenhum horário disponível para este médico --</option>';
+            }
+        });
+
+        horarioSelect.disabled = true;
+    </script>
+</body>
+
+</html>

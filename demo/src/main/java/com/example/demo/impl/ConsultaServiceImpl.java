@@ -2,7 +2,6 @@ package com.example.demo.impl;
 
 import com.example.demo.model.Consulta;
 import com.example.demo.model.HorarioDisponivel;
-import com.example.demo.model.StatusConsulta;
 import com.example.demo.repository.ConsultaRepository;
 import com.example.demo.repository.HorarioDisponivelRepository;
 import com.example.demo.service.ConsultaService;
@@ -18,7 +17,7 @@ public class ConsultaServiceImpl implements ConsultaService {
 
     @Autowired
     private ConsultaRepository consultaRepository;
-    
+
     @Autowired
     private HorarioDisponivelRepository horarioRepository;
 
@@ -35,25 +34,28 @@ public class ConsultaServiceImpl implements ConsultaService {
     @Override
     @Transactional
     public Consulta save(Consulta consulta) {
-        if (consulta.getId() == null) {
-            HorarioDisponivel horario = consulta.getHorario();
-            
-            if (horario == null) {
-                throw new IllegalArgumentException("Horário não pode ser nulo");
-            }
-            
-            if (!horario.isDisponivel()) {
-                throw new IllegalStateException("Horário já está ocupado");
-            }
-            
-            if (existsByHorarioId(horario.getId())) {
-                throw new IllegalStateException("Já existe consulta agendada para este horário");
-            }
-            
-            horario.setDisponivel(false);
-            horarioRepository.save(horario);
+
+        if (consulta.getPaciente() == null) {
+            throw new IllegalArgumentException("Paciente deve ser selecionado.");
         }
-        
+
+        if (consulta.getHorario() == null) {
+            throw new IllegalArgumentException("Horário não pode ser nulo.");
+        }
+
+        HorarioDisponivel horario = consulta.getHorario();
+
+        if (!horario.isDisponivel()) {
+            throw new IllegalStateException("Este horário já está ocupado.");
+        }
+
+        if (consultaRepository.existsByHorarioId(horario.getId())) {
+            throw new IllegalStateException("Já existe consulta agendada para este horário.");
+        }
+
+        horario.setDisponivel(false);
+        horarioRepository.save(horario);
+
         return consultaRepository.save(consulta);
     }
 
@@ -61,17 +63,17 @@ public class ConsultaServiceImpl implements ConsultaService {
     @Transactional
     public void deleteById(Long id) {
         Optional<Consulta> consultaOpt = consultaRepository.findById(id);
-        
+
         if (consultaOpt.isPresent()) {
             Consulta consulta = consultaOpt.get();
-            
+
             HorarioDisponivel horario = consulta.getHorario();
             if (horario != null) {
                 horario.setDisponivel(true);
                 horarioRepository.save(horario);
             }
         }
-        
+
         consultaRepository.deleteById(id);
     }
 

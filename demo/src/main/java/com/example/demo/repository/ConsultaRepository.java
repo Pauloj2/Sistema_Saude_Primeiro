@@ -6,6 +6,5 @@ import com.example.demo.model.Consulta;
 
 @Repository
 public interface ConsultaRepository extends JpaRepository<Consulta, Long> {
-    
     boolean existsByHorarioId(Long horarioId);
 }

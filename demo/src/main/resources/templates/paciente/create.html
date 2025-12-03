@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Cadastrar Paciente</title>
+</head>
+
+<body>
+
+    <h1>Cadastrar Paciente</h1>
+
+    <form th:action="@{/pacientes/save}" th:object="${paciente}" method="post">
+
+        <label>Nome:</label><br>
+        <input type="text" th:field="*{nome}">
+        <div th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></div>
+        <br><br>
+
+        <label>E-mail:</label><br>
+        <input type="email" th:field="*{email}">
+        <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+        <br><br>
+
+        <label>CPF:</label><br>
+        <input type="text" th:field="*{cpf}">
+        <div th:if="${#fields.hasErrors('cpf')}" th:errors="*{cpf}"></div>
+        <br><br>
+
+        <label>Telefone:</label><br>
+        <input type="text" th:field="*{telefone}">
+        <div th:if="${#fields.hasErrors('telefone')}" th:errors="*{telefone}"></div>
+        <br><br>
+
+        <label>Senha:</label><br>
+        <input type="password" th:field="*{senha}">
+        <div th:if="${#fields.hasErrors('senha')}" th:errors="*{senha}"></div>
+        <br><br>
+
+        <button type="submit">Salvar</button>
+    </form>
+
+    <a href="/pacientes">Voltar</a>
+
+</body>
+
+</html>
