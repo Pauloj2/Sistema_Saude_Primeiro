@@ -1,8 +1,6 @@
 package com.example.demo.impl;
 
 import java.util.List;
-import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,30 +12,26 @@ import com.example.demo.service.MedicoService;
 public class MedicoServiceImpl implements MedicoService {
 
     @Autowired
-    private MedicoRepository medicoRepository; 
+    private MedicoRepository medicoRepository;
 
     @Override
-    public List<Medico> getAllMedico() { 
+    public List<Medico> getAllMedico() {
         return medicoRepository.findAll();
     }
 
     @Override
-    public void saveMedico(Medico medico) { 
-        this.medicoRepository.save(medico);
+    public void saveMedico(Medico medico) {
+        medicoRepository.save(medico);
     }
 
     @Override
-    public Medico getMedicoById(long id) { 
-        Optional<Medico> optional = medicoRepository.findById(id);
-        if (optional.isPresent()) {
-            return optional.get();
-        } else {
-            throw new RuntimeException("Médico não encontrado com id: " + id); 
-        }
+    public Medico getMedicoById(long id) {
+        return medicoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Médico não encontrado: " + id));
     }
 
     @Override
-    public void deleteMedicoById(long id) { 
-        this.medicoRepository.deleteById(id);
+    public void deleteMedicoById(long id) {
+        medicoRepository.deleteById(id);
     }
 }

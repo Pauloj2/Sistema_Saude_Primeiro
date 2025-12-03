@@ -23,33 +23,25 @@ public class HomeController {
     @GetMapping("/")
     public String home(Model model) {
 
-        // 1. Buscar todos os horários cadastrados no banco
         List<HorarioDisponivel> todosHorarios = horarioService.getAllHorarioDisponivel();
 
-        // Aqui Calcula o total de médicos cadastrados
         long totalMedicos = medicoService.getAllMedico().size();
 
-        // Total de horários cadastrados (disponíveis + agendados)
         long totalHorarios = todosHorarios.size();
 
-        // Filtra apenas os horários que ainda estão disponíveis
         long horariosDisponiveis = todosHorarios.stream()
                 .filter(HorarioDisponivel::isDisponivel)
                 .count();
 
-        // Filtra apenas os horários que já foram agendados
         long horariosAgendados = todosHorarios.stream()
-                .filter(HorarioDisponivel::isAgendado)
+                .filter(horario -> !horario.isDisponivel()) // ← MUDANÇA AQUI
                 .count();
-
-        // 3. Enviar dados para o template Thymeleaf -----------------------------
 
         model.addAttribute("totalMedicos", totalMedicos);
         model.addAttribute("totalHorarios", totalHorarios);
         model.addAttribute("horariosDisponiveis", horariosDisponiveis);
         model.addAttribute("horariosAgendados", horariosAgendados);
 
-        // 4. Retorna a página dashboard.html
         return "dashboard";
     }
 }

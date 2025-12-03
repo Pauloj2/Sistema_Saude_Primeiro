@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import jakarta.validation.Valid;
 
 import com.example.demo.model.Medico;
 import com.example.demo.service.MedicoService;
@@ -21,8 +22,8 @@ public class MedicoController {
 
     @GetMapping
     public String listarMedicos(Model model) {
-        model.addAttribute("medicosList", medicoService.getAllMedico()); 
-        return "medico/index"; 
+        model.addAttribute("medicosList", medicoService.getAllMedico());
+        return "medico/index";
     }
 
     @GetMapping("/create")
@@ -32,9 +33,9 @@ public class MedicoController {
     }
 
     @PostMapping("/save")
-    public String salvarMedico(@ModelAttribute("medico") Medico medico) {
+    public String salvarMedico(@ModelAttribute("medico") @Valid Medico medico) {
         medicoService.saveMedico(medico);
-        return "redirect:/medico"; 
+        return "redirect:/medico";
     }
 
     @GetMapping("/edit/{id}")
