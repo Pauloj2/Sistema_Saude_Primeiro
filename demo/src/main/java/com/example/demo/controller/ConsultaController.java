@@ -16,6 +16,7 @@ import com.example.demo.service.ConsultaService;
 import com.example.demo.service.HorarioDisponivelService;
 import com.example.demo.service.MedicoService;
 import com.example.demo.service.PacienteService;
+import org.springframework.security.core.Authentication;
 
 import java.util.List;
 
@@ -181,8 +182,14 @@ public class ConsultaController {
     }
 
     @GetMapping("/minhas")
-    public String minhasConsultas(Model model) {
-        model.addAttribute("consultasList", consultaService.findAll());
+    public String minhasConsultas(Model model, Authentication auth) {
+
+        // Recupera o usuário logado (paciente)
+        Paciente paciente = (Paciente) auth.getPrincipal();
+
+        model.addAttribute("consultasList",
+                consultaService.findByPacienteId(paciente.getId()));
+
         return "consulta/minhas";
     }
 

@@ -79,4 +79,9 @@ public class ConsultaServiceImpl implements ConsultaService {
     public boolean existsByHorarioId(Long horarioId) {
         return consultaRepository.existsByHorarioId(horarioId);
     }
+
+    @Override
+    public List<Consulta> findByPacienteId(Long pacienteId) {
+        return consultaRepository.findByPacienteId(pacienteId);
+    }
 }
