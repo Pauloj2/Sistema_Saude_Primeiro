@@ -10,4 +10,5 @@ public interface DiagnosticoService {
     List<Diagnostico> listarTodos();
     Diagnostico buscarPorId(Long id);
     void deletar(Long id);
+    List<Diagnostico> findByIds(List<Long> ids);
 }

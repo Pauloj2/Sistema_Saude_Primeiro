@@ -42,24 +42,19 @@ public class ConsultaServiceImpl implements ConsultaService {
 
         HorarioDisponivel horario = consulta.getHorario();
 
-        // 1. Verifica se o slot existe
         horarioRepository.findById(horario.getId())
                 .orElseThrow(() -> new AgendamentoException("Horário inexistente."));
 
-        // 2. Verifica se está disponível
         if (!horario.isDisponivel()) {
             throw new AgendamentoException("O horário selecionado não está disponível.");
         }
 
-        // 3. Evita duplicação (usa o método existsByHorario que agora existe)
         if (consultaRepository.existsByHorario(horario)) {
             throw new AgendamentoException("Já existe consulta marcada para esse horário.");
         }
 
-        // 4. Salva consulta
         Consulta novaConsulta = consultaRepository.save(consulta);
 
-        // 5. Marca horário como indisponível
         horario.setDisponivel(false);
         horarioRepository.save(horario);
 
@@ -82,7 +77,6 @@ public class ConsultaServiceImpl implements ConsultaService {
         consulta.cancelar();
         consultaRepository.save(consulta);
 
-        // Libera o horário
         HorarioDisponivel horario = consulta.getHorario();
         horario.setDisponivel(true);
         horarioRepository.save(horario);
@@ -90,7 +84,6 @@ public class ConsultaServiceImpl implements ConsultaService {
 
     @Override
     public List<Consulta> buscarConsultasPorPaciente(Paciente paciente) {
-        // Usa o método findByPaciente que agora existe
         return consultaRepository.findByPaciente(paciente);
     }
 
@@ -102,5 +95,11 @@ public class ConsultaServiceImpl implements ConsultaService {
     @Override
     public List<Consulta> findAll() {
         return consultaRepository.findAll();
+    }
+
+    @Override
+    @Transactional
+    public Consulta save(Consulta consulta) {
+        return consultaRepository.save(consulta);
     }
 }

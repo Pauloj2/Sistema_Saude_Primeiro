@@ -8,6 +8,7 @@ import com.example.demo.service.ConsultaService;
 import com.example.demo.service.HorarioDisponivelService;
 import com.example.demo.service.MedicoService;
 import com.example.demo.service.PacienteService;
+import com.example.demo.service.DiagnosticoService;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -15,6 +16,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.HashSet;
+import java.util.List;
 
 @Controller
 @RequestMapping("/consultas")
@@ -24,26 +28,31 @@ public class ConsultaController {
     private final MedicoService medicoService;
     private final HorarioDisponivelService horarioService;
     private final PacienteService pacienteService;
+    private final DiagnosticoService diagnosticoService;
 
     public ConsultaController(
             ConsultaService consultaService,
             MedicoService medicoService,
             HorarioDisponivelService horarioService,
-            PacienteService pacienteService) {
+            PacienteService pacienteService,
+            DiagnosticoService diagnosticoService) {
 
         this.consultaService = consultaService;
         this.medicoService = medicoService;
         this.horarioService = horarioService;
         this.pacienteService = pacienteService;
+        this.diagnosticoService = diagnosticoService;
     }
 
+    // LISTAR TODAS (ATENDENTE)
     @GetMapping
     @PreAuthorize("hasRole('ATENDENTE')")
     public String listarTodasConsultas(Model model) {
         model.addAttribute("consultasList", consultaService.findAll());
-        return "consulta/listar-consultas"; 
+        return "consulta/listar-consultas";
     }
 
+    // MINHAS CONSULTAS (PACIENTE)
     @GetMapping("/minhas")
     @PreAuthorize("hasRole('PACIENTE')")
     public String minhasConsultas(Authentication auth, Model model) {
@@ -55,9 +64,10 @@ public class ConsultaController {
 
         model.addAttribute("consultasList", consultaService.buscarConsultasPorPaciente(paciente));
 
-        return "consulta/minhas-consultas"; 
+        return "consulta/minhas-consultas";
     }
 
+    // FORMULÁRIO DE AGENDAMENTO
     @GetMapping("/agendar")
     @PreAuthorize("hasAnyRole('PACIENTE', 'ATENDENTE')")
     public String agendarForm(Authentication auth, Model model) {
@@ -68,14 +78,14 @@ public class ConsultaController {
         model.addAttribute("medicos", medicoService.findAll());
         model.addAttribute("horarios", horarioService.findTodosDisponiveis());
 
-        // ATENDENTE precisa escolher paciente
         if (principal.hasRole("ROLE_ATENDENTE")) {
             model.addAttribute("pacientes", pacienteService.findAll());
         }
 
-        return "consulta/agendar-consulta"; // ✔ CORRIGIDO
+        return "consulta/agendar-consulta";
     }
 
+    // PROCESSAR AGENDAMENTO
     @PostMapping("/agendar")
     @PreAuthorize("isAuthenticated()")
     public String agendar(
@@ -96,7 +106,6 @@ public class ConsultaController {
             }
 
             if (principal.hasRole("ROLE_ATENDENTE")) {
-
                 if (pacienteId == null) {
                     attributes.addFlashAttribute("mensagemErro", "Selecione um paciente.");
                     return "redirect:/consultas/agendar";
@@ -113,7 +122,6 @@ public class ConsultaController {
 
             attributes.addFlashAttribute("mensagemSucesso", "Consulta agendada com sucesso!");
 
-            // Redirecionamento conforme perfil
             return principal.hasRole("ROLE_PACIENTE")
                     ? "redirect:/consultas/minhas"
                     : "redirect:/consultas";
@@ -124,6 +132,60 @@ public class ConsultaController {
         }
     }
 
+    // 🔵 EDITAR CONSULTA (GET)
+    @GetMapping("/edit/{id}")
+    @PreAuthorize("hasRole('ATENDENTE')")
+    public String editarConsulta(@PathVariable Long id, Model model) {
+
+        Consulta consulta = consultaService.findById(id)
+                .orElseThrow(() -> new RuntimeException("Consulta não encontrada"));
+
+        model.addAttribute("consulta", consulta);
+
+        // envia todos os diagnósticos para o select multiple
+        model.addAttribute("diagnosticosList", diagnosticoService.listarTodos());
+
+        return "consulta/editar-consulta";
+    }
+
+    // 🔵 SALVAR CONSULTA EDITADA (POST)
+    @PostMapping("/update/{id}")
+    @PreAuthorize("hasRole('ATENDENTE')")
+    public String atualizarConsulta(
+            @PathVariable Long id,
+            @ModelAttribute("consulta") Consulta dados,
+            @RequestParam(value = "diagnosticos", required = false) List<Long> diagnosticosIds,
+            RedirectAttributes redirect) {
+
+        try {
+            Consulta consulta = consultaService.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Consulta não encontrada"));
+
+            // Atualiza campos básicos
+            consulta.setObservacoes(dados.getObservacoes());
+            consulta.setStatus(dados.getStatus());
+
+            // Atualiza diagnósticos
+            if (diagnosticosIds != null && !diagnosticosIds.isEmpty()) {
+                consulta.setDiagnosticos(
+                        new HashSet<>(diagnosticoService.findByIds(diagnosticosIds)));
+            } else {
+                consulta.getDiagnosticos().clear();
+            }
+
+            consultaService.save(consulta);
+
+            redirect.addFlashAttribute("mensagemSucesso", "Consulta atualizada com sucesso!");
+            return "redirect:/consultas";
+
+        } catch (Exception e) {
+            redirect.addFlashAttribute("mensagemErro", "Erro ao atualizar consulta: " + e.getMessage());
+            return "redirect:/consultas/edit/" + id;
+        }
+    }
+
+    // CANCELAR CONSULTA
+    @GetMapping("/cancelar/{id}")
     @PreAuthorize("hasAnyRole('PACIENTE', 'ATENDENTE')")
     public String cancelar(
             @PathVariable Long id,

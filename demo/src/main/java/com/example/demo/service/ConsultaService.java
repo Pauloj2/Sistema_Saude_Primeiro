@@ -10,12 +10,9 @@ import java.util.Optional;
 public interface ConsultaService {
 
     Consulta agendar(Consulta consulta) throws AgendamentoException;
-
     void cancelar(Long consultaId) throws AgendamentoException;
-
     List<Consulta> buscarConsultasPorPaciente(Paciente paciente);
-
     Optional<Consulta> findById(Long id);
-
     List<Consulta> findAll();
+    Consulta save(Consulta consulta);
 }

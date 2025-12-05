@@ -37,4 +37,9 @@ public class DiagnosticoServiceImpl implements DiagnosticoService {
     public void deletar(Long id) {
         repository.deleteById(id);
     }
+
+    @Override
+    public List<Diagnostico> findByIds(List<Long> ids) {
+        return repository.findAllByIdIn(ids);
+    }
 }

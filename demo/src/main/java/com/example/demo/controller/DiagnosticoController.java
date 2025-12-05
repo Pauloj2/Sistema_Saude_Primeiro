@@ -47,6 +47,7 @@ public class DiagnosticoController {
     @GetMapping("/delete/{id}")
     public String excluir(@PathVariable Long id, RedirectAttributes ra) {
 
+        service.buscarPorId(id); 
         service.deletar(id);
 
         ra.addFlashAttribute("mensagemSucesso",

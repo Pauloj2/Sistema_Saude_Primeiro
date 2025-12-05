@@ -44,6 +44,21 @@
                     </div>
 
                     <div class="mb-3">
+                        <label class="form-label">Diagnósticos</label>
+
+                        <select multiple class="form-select" th:field="*{diagnosticos}">
+                            <option th:each="d : ${diagnosticosList}" th:value="${d.id}"
+                                th:text="${d.codigo + ' - ' + d.nome}">
+                            </option>
+                        </select>
+
+                        <small class="form-text text-muted">
+                            Segure CTRL (ou Command no Mac) para selecionar vários diagnósticos.
+                        </small>
+                    </div>
+
+
+                    <div class="mb-3">
                         <label class="form-label">Status</label>
                         <select th:field="*{status}" class="form-select" required>
                             <option th:value="${T(com.example.demo.model.StatusConsulta).AGENDADA}"
