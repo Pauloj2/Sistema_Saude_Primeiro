@@ -4,11 +4,16 @@ import java.util.List;
 import com.example.demo.model.HorarioDisponivel;
 
 public interface HorarioDisponivelService {
+        
+    void save(HorarioDisponivel horarioDisponivel); 
+    
+    HorarioDisponivel findById(long id); 
+    
+    void deleteById(long id); 
+    
+    List<HorarioDisponivel> findTodosDisponiveis(); 
 
-    List<HorarioDisponivel> getAllHorarioDisponivel();
-    List<HorarioDisponivel> getHorariosDisponiveis();
-    List<HorarioDisponivel> getHorariosByMedico(Long medicoId);
-    void saveHorarioDisponivel(HorarioDisponivel horarioDisponivel);
-    HorarioDisponivel getHorarioDisponivelById(long id);
-    void deleteHorarioDisponivelById(long id);
+    List<HorarioDisponivel> findAll();
+    
+    List<HorarioDisponivel> findByMedicoId(Long medicoId); 
 }

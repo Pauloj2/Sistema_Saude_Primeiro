@@ -1,10 +1,13 @@
 package com.example.demo.service;
 
 import com.example.demo.model.User;
+import java.util.Optional;
 
 public interface UserService {
 
-    Long save(User user);
+    User save(User user); 
 
-    User findByEmail(String email);
+    Optional<User> findByEmailOptional(String email); 
+    
+    boolean emailExiste(String email); 
 }

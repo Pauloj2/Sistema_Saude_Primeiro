@@ -1,68 +1,60 @@
 package com.example.demo.impl;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-
 import com.example.demo.model.User;
+import com.example.demo.model.Paciente;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.repository.PacienteRepository;
+import com.example.demo.security.CustomUserDetails;
 import com.example.demo.service.UserService;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.context.annotation.Lazy; 
+import org.springframework.security.core.userdetails.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-
+import java.util.Optional;
 @Service
 public class UserServiceImpl implements UserService, UserDetailsService {
 
-    @Autowired
-    private UserRepository userRepo;
+    private final UserRepository userRepo;
+    private final PacienteRepository pacienteRepo;
+    private final PasswordEncoder encoder;
 
-    @Autowired
-    private BCryptPasswordEncoder encoder;
-
-    @Override
-    public Long save(User user) {
-
-        user.setPassword(encoder.encode(user.getPassword()));
-
-        User saved = userRepo.save(user);
-        return saved.getId();
+    public UserServiceImpl(UserRepository userRepo, PacienteRepository pacienteRepo, @Lazy PasswordEncoder encoder) {
+        this.userRepo = userRepo;
+        this.pacienteRepo = pacienteRepo;
+        this.encoder = encoder;
     }
 
     @Override
-    public User findByEmail(String email) {
-        return userRepo.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
+    public User save(User user) {
+        if (user.getPassword() != null && !user.getPassword().startsWith("$2a$")) {
+            user.setPassword(encoder.encode(user.getPassword()));
+        }
+        return userRepo.save(user);
+    }
+
+    @Override
+    public Optional<User> findByEmailOptional(String email) {
+        return userRepo.findByEmail(email);
+    }
+
+    @Override
+    public boolean emailExiste(String email) {
+        return userRepo.findByEmail(email).isPresent();
     }
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
-        Optional<User> opt = userRepo.findByEmail(email);
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Email não encontrado: " + email));
 
-        if (opt.isEmpty()) {
-            throw new UsernameNotFoundException("Email não encontrado: " + email);
+        Optional<Paciente> paciente = Optional.empty();
+
+        if (user.getRoles().contains("ROLE_PACIENTE")) {
+            paciente = pacienteRepo.findByUser(user);
         }
 
-        User user = opt.get();
-
-        Set<GrantedAuthority> authorities = new HashSet<>();
-
-        for (String role : user.getRoles()) {
-            authorities.add(new SimpleGrantedAuthority(role));
-        }
-
-        return new org.springframework.security.core.userdetails.User(
-                user.getEmail(),
-                user.getPassword(),
-                authorities
-        );
+        return new CustomUserDetails(user, paciente);
     }
 }

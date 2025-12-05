@@ -1,211 +1,178 @@
 package com.example.demo.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.demo.exception.AgendamentoException;
+import com.example.demo.model.Consulta;
+import com.example.demo.model.Paciente;
+import com.example.demo.security.CustomUserDetails;
+import com.example.demo.service.ConsultaService;
+import com.example.demo.service.HorarioDisponivelService;
+import com.example.demo.service.MedicoService;
+import com.example.demo.service.PacienteService;
+
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.example.demo.model.Consulta;
-import com.example.demo.model.HorarioDisponivel;
-import com.example.demo.model.Medico;
-import com.example.demo.model.Paciente;
-import com.example.demo.model.StatusConsulta;
-
-import com.example.demo.service.ConsultaService;
-import com.example.demo.service.HorarioDisponivelService;
-import com.example.demo.service.MedicoService;
-import com.example.demo.service.PacienteService;
-import org.springframework.security.core.Authentication;
-
-import java.util.List;
-
 @Controller
 @RequestMapping("/consultas")
 public class ConsultaController {
 
-    @Autowired
-    private ConsultaService consultaService;
+    private final ConsultaService consultaService;
+    private final MedicoService medicoService;
+    private final HorarioDisponivelService horarioService;
+    private final PacienteService pacienteService;
 
-    @Autowired
-    private MedicoService medicoService;
+    public ConsultaController(
+            ConsultaService consultaService,
+            MedicoService medicoService,
+            HorarioDisponivelService horarioService,
+            PacienteService pacienteService) {
+        this.consultaService = consultaService;
+        this.medicoService = medicoService;
+        this.horarioService = horarioService;
+        this.pacienteService = pacienteService;
+    }
 
-    @Autowired
-    private HorarioDisponivelService horarioService;
-
-    @Autowired
-    private PacienteService pacienteService;
-
+    // ---------------------------------------------------------------------
+    // 0. ATENDENTE — Listar Todas as Consultas
+    // ---------------------------------------------------------------------
     @GetMapping
-    public String listarConsultas(Model model) {
+    @PreAuthorize("hasRole('ATENDENTE')")
+    public String listarTodasConsultas(Model model) {
         model.addAttribute("consultasList", consultaService.findAll());
-        return "consulta/index";
+        return "consulta/lista";
     }
 
-    @GetMapping("/agendar")
-    public String mostrarFormularioAgendamento(Model model) {
-
-        model.addAttribute("consulta", new Consulta());
-        model.addAttribute("medicos", medicoService.getAllMedico());
-
-        model.addAttribute("horarios", horarioService.getAllHorarioDisponivel()
-                .stream()
-                .filter(HorarioDisponivel::isDisponivel)
-                .toList());
-
-        model.addAttribute("pacientes", pacienteService.findAll());
-
-        return "consulta/agendar";
-    }
-
-    @PostMapping("/save")
-    public String salvarConsulta(
-            @ModelAttribute("consulta") Consulta consulta,
-            @RequestParam("medicoId") Long medicoId,
-            @RequestParam("horarioId") Long horarioId,
-            @RequestParam("pacienteId") Long pacienteId,
-            RedirectAttributes redirectAttributes) {
-
-        try {
-            Medico medico = medicoService.getMedicoById(medicoId);
-            HorarioDisponivel horario = horarioService.getHorarioDisponivelById(horarioId);
-            Paciente paciente = pacienteService.findById(pacienteId);
-
-            consulta.setMedico(medico);
-            consulta.setHorario(horario);
-            consulta.setPaciente(paciente);
-
-            consultaService.save(consulta);
-
-            redirectAttributes.addFlashAttribute("mensagemSucesso", "Consulta agendada com sucesso!");
-            return "redirect:/consultas";
-
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("mensagemErro", e.getMessage());
-            return "redirect:/consultas/agendar";
-        }
-    }
-
-    @GetMapping("/detalhes/{id}")
-    public String visualizarDetalhes(@PathVariable Long id, Model model) {
-
-        Consulta consulta = consultaService.findById(id)
-                .orElseThrow(() -> new RuntimeException("Consulta não encontrada"));
-
-        model.addAttribute("consulta", consulta);
-        return "consulta/detalhes";
-    }
-
-    @GetMapping("/edit/{id}")
-    public String mostrarFormularioEdicao(@PathVariable Long id, Model model) {
-
-        Consulta consulta = consultaService.findById(id)
-                .orElseThrow(() -> new RuntimeException("Consulta não encontrada"));
-
-        model.addAttribute("consulta", consulta);
-        return "consulta/edit";
-    }
-
-    @PostMapping("/update/{id}")
-    public String atualizarConsulta(
-            @PathVariable Long id,
-            @ModelAttribute("consulta") Consulta consultaAtualizada,
-            RedirectAttributes redirectAttributes) {
-
-        Consulta consulta = consultaService.findById(id)
-                .orElseThrow(() -> new RuntimeException("Consulta não encontrada"));
-
-        consulta.setObservacoes(consultaAtualizada.getObservacoes());
-        consulta.setStatus(consultaAtualizada.getStatus());
-
-        consultaService.save(consulta);
-
-        redirectAttributes.addFlashAttribute("mensagemSucesso", "Consulta atualizada com sucesso!");
-        return "redirect:/consultas";
-    }
-
-    @GetMapping("/cancelar/{id}")
-    public String cancelarConsulta(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-
-        try {
-            Consulta consulta = consultaService.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Consulta não encontrada"));
-
-            consulta.cancelar();
-
-            HorarioDisponivel horario = consulta.getHorario();
-            horario.setDisponivel(true);
-            horarioService.saveHorarioDisponivel(horario);
-
-            consultaService.save(consulta);
-
-            redirectAttributes.addFlashAttribute("mensagemSucesso", "Consulta cancelada com sucesso!");
-
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("mensagemErro", "Erro ao cancelar consulta: " + e.getMessage());
-        }
-
-        return "redirect:/consultas";
-    }
-
-    @GetMapping("/concluir/{id}")
-    public String concluirConsulta(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-
-        try {
-            Consulta consulta = consultaService.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Consulta não encontrada"));
-
-            consulta.concluir();
-            consultaService.save(consulta);
-
-            redirectAttributes.addFlashAttribute("mensagemSucesso", "Consulta concluída!");
-
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("mensagemErro", "Erro ao concluir consulta: " + e.getMessage());
-        }
-
-        return "redirect:/consultas";
-    }
-
-    @GetMapping("/delete/{id}")
-    public String excluirConsulta(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-
-        try {
-            consultaService.deleteById(id);
-            redirectAttributes.addFlashAttribute("mensagemSucesso", "Consulta excluída!");
-
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("mensagemErro", "Erro ao excluir: " + e.getMessage());
-        }
-
-        return "redirect:/consultas";
-    }
-
+    // ---------------------------------------------------------------------
+    // 1. PACIENTE — Ver Minhas Consultas
+    // ---------------------------------------------------------------------
     @GetMapping("/minhas")
-    public String minhasConsultas(Model model, Authentication auth) {
+    @PreAuthorize("hasRole('PACIENTE')")
+    public String minhasConsultas(Authentication auth, Model model) {
 
-        // Recupera o usuário logado (paciente)
-        Paciente paciente = (Paciente) auth.getPrincipal();
+        CustomUserDetails principal = (CustomUserDetails) auth.getPrincipal();
 
-        model.addAttribute("consultasList",
-                consultaService.findByPacienteId(paciente.getId()));
+        Paciente paciente = principal.getPaciente()
+                .orElseThrow(() -> new RuntimeException("Paciente não encontrado na sessão."));
+
+        model.addAttribute("consultasList", consultaService.buscarConsultasPorPaciente(paciente));
 
         return "consulta/minhas";
     }
 
-    @GetMapping("/status/{status}")
-    public String consultasPorStatus(@PathVariable String status, Model model) {
+    // ---------------------------------------------------------------------
+    // 2. FORMULÁRIO DE AGENDAMENTO
+    // ---------------------------------------------------------------------
+    @GetMapping("/agendar")
+    @PreAuthorize("hasAnyRole('PACIENTE', 'ATENDENTE')")
+    public String agendarForm(Authentication auth, Model model) {
 
-        StatusConsulta statusEnum = StatusConsulta.valueOf(status.toUpperCase());
+        CustomUserDetails principal = (CustomUserDetails) auth.getPrincipal();
 
-        List<Consulta> consultas = consultaService.findAll()
-                .stream()
-                .filter(c -> c.getStatus() == statusEnum)
-                .toList();
+        model.addAttribute("consulta", new Consulta());
+        model.addAttribute("medicos", medicoService.findAll());
+        model.addAttribute("horariosDisponiveis", horarioService.findTodosDisponiveis());
 
-        model.addAttribute("consultasList", consultas);
-        model.addAttribute("statusFiltro", status);
+        // Se for atendente, listamos todos os pacientes para selecionar no formulário
+        if (principal.hasRole("ROLE_ATENDENTE")) {
+            model.addAttribute("pacientes", pacienteService.findAll());
+        }
 
-        return "consulta/index";
+        return "consulta/agendar";
+    }
+
+    // ---------------------------------------------------------------------
+    // 3. PROCESSAR AGENDAMENTO
+    // ---------------------------------------------------------------------
+    @PostMapping("/agendar")
+    @PreAuthorize("isAuthenticated()")
+    public String agendar(
+            @ModelAttribute("consulta") Consulta consulta,
+            @RequestParam(value = "pacienteId", required = false) Long pacienteId,
+            @RequestParam(value = "medicoId", required = true) Long medicoId,
+            @RequestParam(value = "horarioId", required = true) Long horarioId,
+            Authentication auth,
+            RedirectAttributes attributes) {
+        try {
+            CustomUserDetails principal = (CustomUserDetails) auth.getPrincipal();
+
+            // PACIENTE agendando para ele mesmo
+            if (principal.hasRole("ROLE_PACIENTE")) {
+                Paciente paciente = principal.getPaciente()
+                        .orElseThrow(() -> new RuntimeException("Paciente não encontrado."));
+                consulta.setPaciente(paciente);
+            }
+
+            // ATENDENTE agendando para alguém
+            if (principal.hasRole("ROLE_ATENDENTE")) {
+                if (pacienteId == null) {
+                    attributes.addFlashAttribute("erro", "Selecione um paciente.");
+                    return "redirect:/consultas/agendar";
+                }
+
+                Paciente paciente = pacienteService.findById(pacienteId);
+                consulta.setPaciente(paciente);
+            }
+
+            // Define médico e horário
+            consulta.setMedico(medicoService.findById(medicoId));
+            consulta.setHorario(horarioService.findById(horarioId));
+
+            consultaService.agendar(consulta);
+
+            attributes.addFlashAttribute("sucesso", "Consulta agendada com sucesso!");
+
+            return (principal.hasRole("ROLE_PACIENTE"))
+                    ? "redirect:/consultas/minhas"
+                    : "redirect:/consultas";
+
+        } catch (AgendamentoException e) {
+            attributes.addFlashAttribute("erro", e.getMessage());
+            return "redirect:/consultas/agendar";
+        }
+    }
+
+    // ---------------------------------------------------------------------
+    // 4. CANCELAMENTO
+    // ---------------------------------------------------------------------
+    @GetMapping("/cancelar/{id}")
+    @PreAuthorize("hasAnyRole('PACIENTE', 'ATENDENTE')")
+    public String cancelar(
+            @PathVariable Long id,
+            Authentication auth,
+            RedirectAttributes attributes) {
+
+        CustomUserDetails principal = (CustomUserDetails) auth.getPrincipal();
+
+        try {
+            // PACIENTE só pode cancelar a própria consulta
+            if (principal.hasRole("ROLE_PACIENTE")) {
+
+                Paciente paciente = principal.getPaciente()
+                        .orElseThrow(() -> new RuntimeException("Paciente não encontrado."));
+
+                Consulta consulta = consultaService.findById(id)
+                        .orElseThrow(() -> new AgendamentoException("Consulta não encontrada."));
+
+                if (!consulta.getPaciente().getId().equals(paciente.getId())) {
+                    attributes.addFlashAttribute("erro", "Você não pode cancelar consultas de outro paciente.");
+                    return "redirect:/consultas/minhas";
+                }
+            }
+
+            consultaService.cancelar(id);
+
+            attributes.addFlashAttribute("sucesso", "Consulta cancelada com sucesso!");
+
+        } catch (AgendamentoException e) {
+            attributes.addFlashAttribute("erro", e.getMessage());
+        }
+
+        return principal.hasRole("ROLE_PACIENTE")
+                ? "redirect:/consultas/minhas"
+                : "redirect:/consultas";
     }
 }

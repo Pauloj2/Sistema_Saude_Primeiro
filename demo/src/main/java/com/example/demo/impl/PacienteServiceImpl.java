@@ -3,29 +3,22 @@ package com.example.demo.impl;
 import com.example.demo.model.Paciente;
 import com.example.demo.repository.PacienteRepository;
 import com.example.demo.service.PacienteService;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 
 @Service
 public class PacienteServiceImpl implements PacienteService {
 
-    @Autowired
-    private PacienteRepository pacienteRepository;
+    private final PacienteRepository pacienteRepository;
 
     @Autowired
-    private BCryptPasswordEncoder passwordEncoder;
+    public PacienteServiceImpl(PacienteRepository pacienteRepository) {
+        this.pacienteRepository = pacienteRepository;
+    }
 
     @Override
     public Paciente save(Paciente paciente) {
-
-        if (paciente.getId() == null) {
-            paciente.setSenha(passwordEncoder.encode(paciente.getSenha()));
-        }
-
         return pacienteRepository.save(paciente);
     }
 
@@ -46,12 +39,9 @@ public class PacienteServiceImpl implements PacienteService {
     }
 
     @Override
-    public boolean emailExiste(String email) {
-        return pacienteRepository.existsByEmail(email);
-    }
-
-    @Override
     public boolean cpfExiste(String cpf) {
         return pacienteRepository.existsByCpf(cpf);
     }
+
+   
 }

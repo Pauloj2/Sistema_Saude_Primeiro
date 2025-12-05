@@ -11,20 +11,20 @@ public class Consulta {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "medico_id", nullable = false)
-    private Medico medico;
-
-    @ManyToOne
-    @JoinColumn(name = "horario_id", nullable = false)
-    private HorarioDisponivel horario;
-
-    @ManyToOne
-    @JoinColumn(name = "paciente_id", nullable = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "paciente_id")
     private Paciente paciente;
 
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "medico_id")
+    private Medico medico;
+
+    @OneToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "horario_id", unique = true)
+    private HorarioDisponivel horario;
+
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false)
     private StatusConsulta status = StatusConsulta.AGENDADA;
 
     @Column(length = 500)
@@ -35,17 +35,34 @@ public class Consulta {
 
     private LocalDateTime dataAtualizacao;
 
+    public Consulta() {
+    }
+
     @PreUpdate
-    protected void onUpdate() {
+    protected void preUpdate() {
         this.dataAtualizacao = LocalDateTime.now();
     }
 
+    // ---- Regras de negócio ----
+    public void cancelar() {
+        this.status = StatusConsulta.CANCELADA;
+    }
+
+    public void concluir() {
+        this.status = StatusConsulta.CONCLUIDA;
+    }
+
+    // ---- Getters e Setters ----
     public Long getId() {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public Paciente getPaciente() {
+        return paciente;
+    }
+
+    public void setPaciente(Paciente paciente) {
+        this.paciente = paciente;
     }
 
     public Medico getMedico() {
@@ -62,30 +79,6 @@ public class Consulta {
 
     public void setHorario(HorarioDisponivel horario) {
         this.horario = horario;
-    }
-
-    public Paciente getPaciente() {
-        return paciente;
-    }
-
-    public void setPaciente(Paciente paciente) {
-        this.paciente = paciente;
-    }
-
-    public String getPacienteNome() {
-        return paciente != null ? paciente.getNome() : null;
-    }
-
-    public String getPacienteEmail() {
-        return paciente != null ? paciente.getEmail() : null;
-    }
-
-    public String getPacienteTelefone() {
-        return paciente != null ? paciente.getTelefone() : null;
-    }
-
-    public String getPacienteCpf() {
-        return paciente != null ? paciente.getCpf() : null;
     }
 
     public StatusConsulta getStatus() {
@@ -108,35 +101,7 @@ public class Consulta {
         return dataCriacao;
     }
 
-    public void setDataCriacao(LocalDateTime dataCriacao) {
-        this.dataCriacao = dataCriacao;
-    }
-
     public LocalDateTime getDataAtualizacao() {
         return dataAtualizacao;
-    }
-
-    public void setDataAtualizacao(LocalDateTime dataAtualizacao) {
-        this.dataAtualizacao = dataAtualizacao;
-    }
-
-    public boolean isPendente() {
-        return this.status == StatusConsulta.AGENDADA;
-    }
-
-    public boolean isConcluida() {
-        return this.status == StatusConsulta.CONCLUIDA;
-    }
-
-    public boolean isCancelada() {
-        return this.status == StatusConsulta.CANCELADA;
-    }
-
-    public void cancelar() {
-        this.status = StatusConsulta.CANCELADA;
-    }
-
-    public void concluir() {
-        this.status = StatusConsulta.CONCLUIDA;
     }
 }

@@ -1,11 +1,12 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.Paciente;
+import com.example.demo.model.User; 
 import com.example.demo.service.PacienteService;
+import com.example.demo.service.UserService; 
 
 import jakarta.validation.Valid;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -15,8 +16,13 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/pacientes")
 public class PacienteController {
 
-    @Autowired
-    private PacienteService pacienteService;
+    private final PacienteService pacienteService;
+    private final UserService userService; //
+
+    public PacienteController(PacienteService pacienteService, UserService userService) {
+        this.pacienteService = pacienteService;
+        this.userService = userService;
+    }
 
     @GetMapping
     public String listar(Model model) {
@@ -32,8 +38,8 @@ public class PacienteController {
 
     @PostMapping("/save")
     public String save(@Valid @ModelAttribute("paciente") Paciente paciente,
-                       BindingResult result,
-                       Model model) {
+            BindingResult result,
+            Model model) {
 
         if (result.hasErrors()) {
             return "paciente/create";
@@ -52,9 +58,9 @@ public class PacienteController {
 
     @PostMapping("/update/{id}")
     public String update(@PathVariable Long id,
-                         @Valid @ModelAttribute("paciente") Paciente pacienteAtualizado,
-                         BindingResult result,
-                         Model model) {
+            @Valid @ModelAttribute("paciente") Paciente pacienteAtualizado,
+            BindingResult result,
+            Model model) {
 
         if (result.hasErrors()) {
             return "paciente/edit";
@@ -62,11 +68,15 @@ public class PacienteController {
 
         Paciente paciente = pacienteService.findById(id);
 
+        User user = paciente.getUser();
+
+        user.setName(pacienteAtualizado.getNome());
+
         paciente.setNome(pacienteAtualizado.getNome());
-        paciente.setEmail(pacienteAtualizado.getEmail());
         paciente.setCpf(pacienteAtualizado.getCpf());
         paciente.setTelefone(pacienteAtualizado.getTelefone());
 
+        userService.save(user);
         pacienteService.save(paciente);
 
         return "redirect:/pacientes";
@@ -74,6 +84,7 @@ public class PacienteController {
 
     @GetMapping("/delete/{id}")
     public String delete(@PathVariable Long id) {
+
         pacienteService.deleteById(id);
         return "redirect:/pacientes";
     }

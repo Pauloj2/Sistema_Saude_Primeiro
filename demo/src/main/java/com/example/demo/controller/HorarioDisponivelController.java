@@ -1,6 +1,5 @@
 package com.example.demo.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -16,39 +15,46 @@ import jakarta.validation.Valid;
 @RequestMapping("/horarios")
 public class HorarioDisponivelController {
 
-    @Autowired
-    private HorarioDisponivelService horarioService;
+    private final HorarioDisponivelService horarioService;
+    private final MedicoService medicoService;
 
-    @Autowired
-    private MedicoService medicoService;
+    public HorarioDisponivelController(HorarioDisponivelService horarioService, MedicoService medicoService) {
+        this.horarioService = horarioService;
+        this.medicoService = medicoService;
+    }
 
     @GetMapping
     public String listarHorarios(Model model) {
-        model.addAttribute("horariosList", horarioService.getAllHorarioDisponivel());
+        // 🔑 CORREÇÃO: Usando findAll()
+        model.addAttribute("horariosList", horarioService.findAll());
         return "horario/index";
     }
 
     @GetMapping("/create")
     public String mostrarFormularioCadastro(Model model) {
         model.addAttribute("horario", new HorarioDisponivel());
-        model.addAttribute("medicos", medicoService.getAllMedico());
+        // 🔑 CORREÇÃO: Usando findAll()
+        model.addAttribute("medicos", medicoService.findAll());
         return "horario/create";
     }
 
     @PostMapping("/save")
     public String salvarHorario(@Valid @ModelAttribute("horario") HorarioDisponivel horario,
-                                BindingResult result,
-                                Model model) {
+            BindingResult result,
+            Model model) {
 
         if (result.hasErrors()) {
-            model.addAttribute("medicos", medicoService.getAllMedico());
+            // 🔑 CORREÇÃO: Usando findAll()
+            model.addAttribute("medicos", medicoService.findAll());
             return "horario/create";
         }
 
         try {
-            horarioService.saveHorarioDisponivel(horario);
+            // 🔑 CORREÇÃO: Usando save()
+            horarioService.save(horario);
         } catch (RuntimeException e) {
-            model.addAttribute("medicos", medicoService.getAllMedico());
+            // 🔑 CORREÇÃO: Usando findAll()
+            model.addAttribute("medicos", medicoService.findAll());
             model.addAttribute("erro", e.getMessage());
             return "horario/create";
         }
@@ -59,29 +65,34 @@ public class HorarioDisponivelController {
     @GetMapping("/edit/{id}")
     public String mostrarFormularioEdicao(@PathVariable Long id, Model model) {
 
-        HorarioDisponivel horario = horarioService.getHorarioDisponivelById(id);
+        // 🔑 CORREÇÃO: Usando findById()
+        HorarioDisponivel horario = horarioService.findById(id);
 
         model.addAttribute("horario", horario);
-        model.addAttribute("medicos", medicoService.getAllMedico());
+        // 🔑 CORREÇÃO: Usando findAll()
+        model.addAttribute("medicos", medicoService.findAll());
         return "horario/edit";
     }
 
     @PostMapping("/update/{id}")
     public String atualizarHorario(@PathVariable Long id,
-                                   @Valid @ModelAttribute("horario") HorarioDisponivel horario,
-                                   BindingResult result,
-                                   Model model) {
+            @Valid @ModelAttribute("horario") HorarioDisponivel horario,
+            BindingResult result,
+            Model model) {
 
         if (result.hasErrors()) {
-            model.addAttribute("medicos", medicoService.getAllMedico());
+            // 🔑 CORREÇÃO: Usando findAll()
+            model.addAttribute("medicos", medicoService.findAll());
             return "horario/edit";
         }
 
         try {
             horario.setId(id);
-            horarioService.saveHorarioDisponivel(horario);
+            // 🔑 CORREÇÃO: Usando save()
+            horarioService.save(horario);
         } catch (RuntimeException e) {
-            model.addAttribute("medicos", medicoService.getAllMedico());
+            // 🔑 CORREÇÃO: Usando findAll()
+            model.addAttribute("medicos", medicoService.findAll());
             model.addAttribute("erro", e.getMessage());
             return "horario/edit";
         }
@@ -91,20 +102,23 @@ public class HorarioDisponivelController {
 
     @GetMapping("/delete/{id}")
     public String excluirHorario(@PathVariable Long id) {
-        horarioService.deleteHorarioDisponivelById(id);
+        // 🔑 CORREÇÃO: Usando deleteById()
+        horarioService.deleteById(id);
         return "redirect:/horarios";
     }
 
     @GetMapping("/disponiveis")
     public String listarHorariosDisponiveis(Model model) {
-        model.addAttribute("horariosList", horarioService.getHorariosDisponiveis());
+        // 🔑 CORREÇÃO: Usando findTodosDisponiveis() (método customizado correto)
+        model.addAttribute("horariosList", horarioService.findTodosDisponiveis());
         return "horario/disponiveis";
     }
 
     @GetMapping("/medico/{id}")
     public String listarPorMedico(@PathVariable Long id, Model model) {
-        model.addAttribute("horariosList", horarioService.getHorariosByMedico(id));
-        model.addAttribute("medico", medicoService.getMedicoById(id));
+        // NOTA: Presume-se que o MedicoService tem um método getMedicoById(id)
+        model.addAttribute("horariosList", horarioService.findByMedicoId(id));
+        model.addAttribute("medico", medicoService.findById(id)); // 🔑 CORREÇÃO: Usando findById
         return "horario/por-medico";
     }
 }

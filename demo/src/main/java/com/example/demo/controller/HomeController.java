@@ -1,8 +1,6 @@
 package com.example.demo.controller;
 
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,18 +12,20 @@ import com.example.demo.service.HorarioDisponivelService;
 @Controller
 public class HomeController {
 
-    @Autowired
-    private MedicoService medicoService;
+    private final MedicoService medicoService;
+    private final HorarioDisponivelService horarioService;
 
-    @Autowired
-    private HorarioDisponivelService horarioService;
+    public HomeController(MedicoService medicoService, HorarioDisponivelService horarioService) {
+        this.medicoService = medicoService;
+        this.horarioService = horarioService;
+    }
 
     @GetMapping("/")
     public String home(Model model) {
 
-        List<HorarioDisponivel> todosHorarios = horarioService.getAllHorarioDisponivel();
+        List<HorarioDisponivel> todosHorarios = horarioService.findAll();
 
-        long totalMedicos = medicoService.getAllMedico().size();
+        long totalMedicos = medicoService.findAll().size();
 
         long totalHorarios = todosHorarios.size();
 
@@ -34,7 +34,7 @@ public class HomeController {
                 .count();
 
         long horariosAgendados = todosHorarios.stream()
-                .filter(horario -> !horario.isDisponivel()) // ← MUDANÇA AQUI
+                .filter(horario -> !horario.isDisponivel())
                 .count();
 
         model.addAttribute("totalMedicos", totalMedicos);

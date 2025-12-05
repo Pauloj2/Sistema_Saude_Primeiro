@@ -1,28 +1,97 @@
 package com.example.demo.impl;
 
+import com.example.demo.exception.AgendamentoException;
 import com.example.demo.model.Consulta;
 import com.example.demo.model.HorarioDisponivel;
+import com.example.demo.model.Paciente;
 import com.example.demo.repository.ConsultaRepository;
 import com.example.demo.repository.HorarioDisponivelRepository;
 import com.example.demo.service.ConsultaService;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class ConsultaServiceImpl implements ConsultaService {
 
-    @Autowired
-    private ConsultaRepository consultaRepository;
-    @Autowired
-    private HorarioDisponivelRepository horarioRepository;
+    private final ConsultaRepository consultaRepository;
+    private final HorarioDisponivelRepository horarioRepository;
+
+    public ConsultaServiceImpl(
+            ConsultaRepository consultaRepository,
+            HorarioDisponivelRepository horarioRepository) {
+        this.consultaRepository = consultaRepository;
+        this.horarioRepository = horarioRepository;
+    }
 
     @Override
-    public List<Consulta> findAll() {
-        return consultaRepository.findAll();
+    @Transactional
+    public Consulta agendar(Consulta consulta) throws AgendamentoException {
+
+        if (consulta.getPaciente() == null) {
+            throw new AgendamentoException("Paciente não informado.");
+        }
+
+        if (consulta.getHorario() == null) {
+            throw new AgendamentoException("Horário não informado.");
+        }
+
+        HorarioDisponivel horario = consulta.getHorario();
+
+        // 1. Verifica se o slot existe
+        horarioRepository.findById(horario.getId())
+                .orElseThrow(() -> new AgendamentoException("Horário inexistente."));
+
+        // 2. Verifica se está disponível
+        if (!horario.isDisponivel()) {
+            throw new AgendamentoException("O horário selecionado não está disponível.");
+        }
+
+        // 3. Evita duplicação (usa o método existsByHorario que agora existe)
+        if (consultaRepository.existsByHorario(horario)) {
+            throw new AgendamentoException("Já existe consulta marcada para esse horário.");
+        }
+
+        // 4. Salva consulta
+        Consulta novaConsulta = consultaRepository.save(consulta);
+
+        // 5. Marca horário como indisponível
+        horario.setDisponivel(false);
+        horarioRepository.save(horario);
+
+        return novaConsulta;
+    }
+
+    @Override
+    @Transactional
+    public void cancelar(Long consultaId) throws AgendamentoException {
+
+        Consulta consulta = consultaRepository.findById(consultaId)
+                .orElseThrow(() -> new AgendamentoException("Consulta não encontrada."));
+
+        LocalDateTime limite = consulta.getHorario().getDataHora().minusHours(24);
+
+        if (LocalDateTime.now().isAfter(limite)) {
+            throw new AgendamentoException("Cancelamento só é permitido com 24 horas de antecedência.");
+        }
+
+        consulta.cancelar();
+        consultaRepository.save(consulta);
+
+        // Libera o horário
+        HorarioDisponivel horario = consulta.getHorario();
+        horario.setDisponivel(true);
+        horarioRepository.save(horario);
+    }
+
+    @Override
+    public List<Consulta> buscarConsultasPorPaciente(Paciente paciente) {
+        // Usa o método findByPaciente que agora existe
+        return consultaRepository.findByPaciente(paciente);
     }
 
     @Override
@@ -31,57 +100,7 @@ public class ConsultaServiceImpl implements ConsultaService {
     }
 
     @Override
-    @Transactional
-    public Consulta save(Consulta consulta) {
-
-        if (consulta.getPaciente() == null) {
-            throw new IllegalArgumentException("Paciente deve ser selecionado.");
-        }
-
-        if (consulta.getHorario() == null) {
-            throw new IllegalArgumentException("Horário não pode ser nulo.");
-        }
-
-        HorarioDisponivel horario = consulta.getHorario();
-
-        if (!horario.isDisponivel()) {
-            throw new IllegalStateException("Este horário já está ocupado.");
-        }
-
-        if (consultaRepository.existsByHorarioId(horario.getId())) {
-            throw new IllegalStateException("Já existe consulta agendada para este horário.");
-        }
-
-        horario.setDisponivel(false);
-        horarioRepository.save(horario);
-
-        return consultaRepository.save(consulta);
-    }
-
-    @Override
-    @Transactional
-    public void deleteById(Long id) {
-        Optional<Consulta> consultaOpt = consultaRepository.findById(id);
-
-        if (consultaOpt.isPresent()) {
-            Consulta consulta = consultaOpt.get();
-
-            HorarioDisponivel horario = consulta.getHorario();
-            if (horario != null) {
-                horario.setDisponivel(true);
-                horarioRepository.save(horario);
-            }
-        }
-        consultaRepository.deleteById(id);
-    }
-
-    @Override
-    public boolean existsByHorarioId(Long horarioId) {
-        return consultaRepository.existsByHorarioId(horarioId);
-    }
-
-    @Override
-    public List<Consulta> findByPacienteId(Long pacienteId) {
-        return consultaRepository.findByPacienteId(pacienteId);
+    public List<Consulta> findAll() {
+        return consultaRepository.findAll();
     }
 }

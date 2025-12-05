@@ -1,45 +1,30 @@
-package com.example.demo.model;
+package com.example.demo.dto;
 
-import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
-@Entity
-@Table(name = "pacientes")
-public class Paciente {
+public class RegistroDTO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    // 🔑 RELACIONAMENTO 1:1 com User (Chave Estrangeira)
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", unique = true, nullable = false)
-    private User user; // Paciente é o "dono" da FK
 
     @NotBlank(message = "O nome é obrigatório.")
     private String nome;
 
     @NotBlank(message = "O CPF é obrigatório.")
     @Pattern(regexp = "\\d{11}", message = "O CPF deve conter 11 dígitos.")
-    @Column(unique = true, nullable = false)
     private String cpf;
 
     @NotBlank(message = "O telefone é obrigatório.")
     private String telefone;
 
-    // Construtor vazio
-    public Paciente() {
-    }
 
-    // --- Getters e Setters ---
-    public Long getId() {
-        return id;
-    }
+    @Email(message = "E-mail inválido.")
+    @NotBlank(message = "O e-mail é obrigatório.")
+    private String email;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    @NotBlank(message = "A senha é obrigatória.")
+    private String senha;
+
 
     public String getNome() {
         return nome;
@@ -65,11 +50,19 @@ public class Paciente {
         this.telefone = telefone;
     }
 
-    public User getUser() { 
-        return user;
+    public String getEmail() {
+        return email;
     }
 
-    public void setUser(User user) { 
-        this.user = user;
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getSenha() {
+        return senha;
+    }
+
+    public void setSenha(String senha) {
+        this.senha = senha;
     }
 }
