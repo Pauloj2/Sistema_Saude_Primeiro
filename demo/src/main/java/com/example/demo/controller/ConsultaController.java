@@ -30,25 +30,20 @@ public class ConsultaController {
             MedicoService medicoService,
             HorarioDisponivelService horarioService,
             PacienteService pacienteService) {
+
         this.consultaService = consultaService;
         this.medicoService = medicoService;
         this.horarioService = horarioService;
         this.pacienteService = pacienteService;
     }
 
-    // ---------------------------------------------------------------------
-    // 0. ATENDENTE — Listar Todas as Consultas
-    // ---------------------------------------------------------------------
     @GetMapping
     @PreAuthorize("hasRole('ATENDENTE')")
     public String listarTodasConsultas(Model model) {
         model.addAttribute("consultasList", consultaService.findAll());
-        return "consulta/lista";
+        return "consulta/listar-consultas"; 
     }
 
-    // ---------------------------------------------------------------------
-    // 1. PACIENTE — Ver Minhas Consultas
-    // ---------------------------------------------------------------------
     @GetMapping("/minhas")
     @PreAuthorize("hasRole('PACIENTE')")
     public String minhasConsultas(Authentication auth, Model model) {
@@ -60,12 +55,9 @@ public class ConsultaController {
 
         model.addAttribute("consultasList", consultaService.buscarConsultasPorPaciente(paciente));
 
-        return "consulta/minhas";
+        return "consulta/minhas-consultas"; 
     }
 
-    // ---------------------------------------------------------------------
-    // 2. FORMULÁRIO DE AGENDAMENTO
-    // ---------------------------------------------------------------------
     @GetMapping("/agendar")
     @PreAuthorize("hasAnyRole('PACIENTE', 'ATENDENTE')")
     public String agendarForm(Authentication auth, Model model) {
@@ -74,42 +66,39 @@ public class ConsultaController {
 
         model.addAttribute("consulta", new Consulta());
         model.addAttribute("medicos", medicoService.findAll());
-        model.addAttribute("horariosDisponiveis", horarioService.findTodosDisponiveis());
+        model.addAttribute("horarios", horarioService.findTodosDisponiveis());
 
-        // Se for atendente, listamos todos os pacientes para selecionar no formulário
+        // ATENDENTE precisa escolher paciente
         if (principal.hasRole("ROLE_ATENDENTE")) {
             model.addAttribute("pacientes", pacienteService.findAll());
         }
 
-        return "consulta/agendar";
+        return "consulta/agendar-consulta"; // ✔ CORRIGIDO
     }
 
-    // ---------------------------------------------------------------------
-    // 3. PROCESSAR AGENDAMENTO
-    // ---------------------------------------------------------------------
     @PostMapping("/agendar")
     @PreAuthorize("isAuthenticated()")
     public String agendar(
             @ModelAttribute("consulta") Consulta consulta,
             @RequestParam(value = "pacienteId", required = false) Long pacienteId,
-            @RequestParam(value = "medicoId", required = true) Long medicoId,
-            @RequestParam(value = "horarioId", required = true) Long horarioId,
+            @RequestParam Long medicoId,
+            @RequestParam Long horarioId,
             Authentication auth,
             RedirectAttributes attributes) {
+
         try {
             CustomUserDetails principal = (CustomUserDetails) auth.getPrincipal();
 
-            // PACIENTE agendando para ele mesmo
             if (principal.hasRole("ROLE_PACIENTE")) {
                 Paciente paciente = principal.getPaciente()
                         .orElseThrow(() -> new RuntimeException("Paciente não encontrado."));
                 consulta.setPaciente(paciente);
             }
 
-            // ATENDENTE agendando para alguém
             if (principal.hasRole("ROLE_ATENDENTE")) {
+
                 if (pacienteId == null) {
-                    attributes.addFlashAttribute("erro", "Selecione um paciente.");
+                    attributes.addFlashAttribute("mensagemErro", "Selecione um paciente.");
                     return "redirect:/consultas/agendar";
                 }
 
@@ -117,28 +106,24 @@ public class ConsultaController {
                 consulta.setPaciente(paciente);
             }
 
-            // Define médico e horário
             consulta.setMedico(medicoService.findById(medicoId));
             consulta.setHorario(horarioService.findById(horarioId));
 
             consultaService.agendar(consulta);
 
-            attributes.addFlashAttribute("sucesso", "Consulta agendada com sucesso!");
+            attributes.addFlashAttribute("mensagemSucesso", "Consulta agendada com sucesso!");
 
-            return (principal.hasRole("ROLE_PACIENTE"))
+            // Redirecionamento conforme perfil
+            return principal.hasRole("ROLE_PACIENTE")
                     ? "redirect:/consultas/minhas"
                     : "redirect:/consultas";
 
         } catch (AgendamentoException e) {
-            attributes.addFlashAttribute("erro", e.getMessage());
+            attributes.addFlashAttribute("mensagemErro", e.getMessage());
             return "redirect:/consultas/agendar";
         }
     }
 
-    // ---------------------------------------------------------------------
-    // 4. CANCELAMENTO
-    // ---------------------------------------------------------------------
-    @GetMapping("/cancelar/{id}")
     @PreAuthorize("hasAnyRole('PACIENTE', 'ATENDENTE')")
     public String cancelar(
             @PathVariable Long id,
@@ -148,7 +133,7 @@ public class ConsultaController {
         CustomUserDetails principal = (CustomUserDetails) auth.getPrincipal();
 
         try {
-            // PACIENTE só pode cancelar a própria consulta
+
             if (principal.hasRole("ROLE_PACIENTE")) {
 
                 Paciente paciente = principal.getPaciente()
@@ -158,17 +143,19 @@ public class ConsultaController {
                         .orElseThrow(() -> new AgendamentoException("Consulta não encontrada."));
 
                 if (!consulta.getPaciente().getId().equals(paciente.getId())) {
-                    attributes.addFlashAttribute("erro", "Você não pode cancelar consultas de outro paciente.");
+                    attributes.addFlashAttribute("mensagemErro",
+                            "Você não pode cancelar consultas de outro paciente.");
+
                     return "redirect:/consultas/minhas";
                 }
             }
 
             consultaService.cancelar(id);
 
-            attributes.addFlashAttribute("sucesso", "Consulta cancelada com sucesso!");
+            attributes.addFlashAttribute("mensagemSucesso", "Consulta cancelada com sucesso!");
 
         } catch (AgendamentoException e) {
-            attributes.addFlashAttribute("erro", e.getMessage());
+            attributes.addFlashAttribute("mensagemErro", e.getMessage());
         }
 
         return principal.hasRole("ROLE_PACIENTE")

@@ -1,0 +1,77 @@
+<!-- minhas-consultas.html -->
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="fragments/header :: head"></head>
+
+<body>
+    <div th:replace="fragments/header :: header"></div>
+
+    <main class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1><i class="bi bi-person-lines-fill"></i> Minhas Consultas</h1>
+            <a class="btn btn-primary" th:href="@{/consultas/agendar}"><i class="bi bi-plus"></i> Agendar nova</a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Médico</th>
+                        <th>Data/Hora</th>
+                        <th>Status</th>
+                        <th>Observações</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(consultasList)}">
+                        <td colspan="6" class="text-center py-4">
+                            <i class="bi bi-inbox fs-1 text-muted"></i>
+                            <div class="mt-2 text-muted">Você ainda não tem consultas</div>
+                        </td>
+                    </tr>
+
+                    <tr th:each="c : ${consultasList}">
+                        <th th:text="${c.id}">1</th>
+                        <td>
+                            <strong th:text="${c.medico != null ? c.medico.nome : '-'}">Dr(a)</strong><br />
+                            <small class="text-muted"
+                                th:text="${c.medico != null ? c.medico.especialidade : ''}">especialidade</small>
+                        </td>
+                        <td th:text="${#temporals.format(c.horario.dataHora, 'dd/MM/yyyy HH:mm')}">00/00/0000 00:00</td>
+                        <td>
+                            <span th:switch="${c.status}">
+                                <span th:case="T(com.example.demo.model.StatusConsulta).AGENDADA"
+                                    class="badge badge-agendada">Agendada</span>
+                                <span th:case="T(com.example.demo.model.StatusConsulta).CONCLUIDA"
+                                    class="badge badge-concluida">Concluída</span>
+                                <span th:case="T(com.example.demo.model.StatusConsulta).CANCELADA"
+                                    class="badge badge-cancelada">Cancelada</span>
+                            </span>
+                        </td>
+                        <td th:text="${c.observacoes != null ? c.observacoes : '-'}">Observações</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a class="btn btn-sm btn-info" th:href="@{/consultas/detalhes/{id}(id=${c.id})}"><i
+                                        class="bi bi-eye"></i></a>
+                                <a class="btn btn-sm btn-danger" th:if="${c.status.name() == 'AGENDADA'}"
+                                    th:href="@{/consultas/cancelar/{id}(id=${c.id})}"
+                                    th:onclick="|return confirm('Deseja cancelar esta consulta?')|">
+                                    <i class="bi bi-x-circle"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </main>
+
+    <div th:replace="fragments/footer :: footer"></div>
+    <div th:replace="fragments/footer :: common-scripts"></div>
+</body>
+
+</html>

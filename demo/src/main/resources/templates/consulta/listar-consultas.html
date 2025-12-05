@@ -1,0 +1,172 @@
+<!-- listar-consultas.html -->
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="fragments/header :: head"></head>
+
+<body>
+    <div th:replace="fragments/header :: header"></div>
+
+    <main class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1><i class="bi bi-calendar-check"></i> Listagem de Consultas</h1>
+            <div>
+                <a class="btn btn-primary me-2" th:href="@{/consultas/agendar}"><i class="bi bi-plus"></i> Agendar</a>
+                <a class="btn btn-secondary" th:href="@{/}"><i class="bi bi-house"></i> Início</a>
+            </div>
+        </div>
+
+        <!-- Alertas -->
+        <div th:if="${mensagemSucesso}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> <span th:text="${mensagemSucesso}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${mensagemErro}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-circle"></i> <span th:text="${mensagemErro}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- Filtros (simples) -->
+        <div class="mb-3">
+            <form class="row g-2" th:action="@{/consultas}" method="get">
+                <div class="col-auto">
+                    <select name="status" class="form-select">
+                        <option value="">Todos os status</option>
+                        <option value="AGENDADA">Agendada</option>
+                        <option value="CONCLUIDA">Concluída</option>
+                        <option value="CANCELADA">Cancelada</option>
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <input name="q" class="form-control" type="search" placeholder="Pesquisar paciente ou médico" />
+                </div>
+                <div class="col-auto">
+                    <button class="btn btn-outline-primary">Filtrar</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tabela -->
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Paciente</th>
+                        <th>Médico</th>
+                        <th>Data / Hora</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(consultasList)}">
+                        <td colspan="6" class="text-center py-4">
+                            <i class="bi bi-inbox fs-1 text-muted"></i>
+                            <div class="mt-2 text-muted">Nenhuma consulta encontrada</div>
+                        </td>
+                    </tr>
+
+                    <tr th:each="consulta : ${consultasList}">
+                        <th scope="row" th:text="${consulta.id}">1</th>
+                        <td>
+                            <strong
+                                th:text="${consulta.paciente != null ? consulta.paciente.nome : '—'}">Paciente</strong><br />
+                            <small class="text-muted"
+                                th:text="${consulta.paciente != null ? consulta.paciente.email : ''}">email</small>
+                        </td>
+                        <td>
+                            <span th:text="${consulta.medico != null ? consulta.medico.nome : '—'}">Dr(a)</span><br />
+                            <small class="text-muted"
+                                th:text="${consulta.medico != null ? consulta.medico.especialidade : ''}">especialidade</small>
+                        </td>
+                        <td>
+                            <i class="bi bi-calendar-event"></i>
+                            <span
+                                th:text="${#temporals.format(consulta.horario.dataHora, 'dd/MM/yyyy HH:mm')}">00/00/0000
+                                00:00</span>
+                        </td>
+                        <td>
+                            <span th:switch="${consulta.status}">
+                                <span th:case="T(com.example.demo.model.StatusConsulta).AGENDADA"
+                                    class="badge badge-agendada"><i class="bi bi-clock"></i> Agendada</span>
+                                <span th:case="T(com.example.demo.model.StatusConsulta).CONCLUIDA"
+                                    class="badge badge-concluida"><i class="bi bi-check"></i> Concluída</span>
+                                <span th:case="T(com.example.demo.model.StatusConsulta).CANCELADA"
+                                    class="badge badge-cancelada"><i class="bi bi-x"></i> Cancelada</span>
+                                <span th:case="*"><span class="badge bg-secondary"
+                                        th:text="${consulta.status}">—</span></span>
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a class="btn btn-sm btn-info" th:href="@{/consultas/detalhes/{id}(id=${consulta.id})}"
+                                    title="Detalhes"><i class="bi bi-eye"></i></a>
+
+                                <!-- Editar apenas se estiver agendada e se usuário tiver permissão -->
+                                <a class="btn btn-sm btn-warning"
+                                    th:if="${consulta.status.name() == 'AGENDADA' and #authorization.expression('hasRole(''ATENDENTE'') or hasRole(''ADMIN'')') }"
+                                    th:href="@{/consultas/edit/{id}(id=${consulta.id})}" title="Editar"><i
+                                        class="bi bi-pencil"></i></a>
+
+                                <!-- Concluir -->
+                                <a class="btn btn-sm btn-success"
+                                    th:if="${consulta.status.name() == 'AGENDADA' and #authorization.expression('hasRole(''ATENDENTE'') or hasRole(''MEDICO'')') }"
+                                    th:href="@{/consultas/concluir/{id}(id=${consulta.id})}"
+                                    th:onclick="|return confirm('Deseja marcar esta consulta como concluída?')|"
+                                    title="Concluir"><i class="bi bi-check2-circle"></i></a>
+
+                                <!-- Cancelar apenas se agendada -->
+                                <a class="btn btn-sm btn-danger" th:if="${consulta.status.name() == 'AGENDADA'}"
+                                    th:href="@{/consultas/cancelar/{id}(id=${consulta.id})}"
+                                    th:onclick="|return confirm('Deseja cancelar esta consulta? O horário ficará disponível novamente.')|"
+                                    title="Cancelar"><i class="bi bi-x-circle"></i></a>
+
+                                <!-- Excluir apenas para admin -->
+                                <a class="btn btn-sm btn-dark"
+                                    th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+                                    th:href="@{/consultas/delete/{id}(id=${consulta.id})}"
+                                    th:onclick="|return confirm('ATENÇÃO: Esta ação excluirá permanentemente a consulta. Deseja continuar?')|"
+                                    title="Excluir"><i class="bi bi-trash"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Cards resumo (simples) -->
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card text-white bg-info mb-3">
+                    <div class="card-body">
+                        <h6><i class="bi bi-clock"></i> Agendadas</h6>
+                        <h3 th:text="${#lists.size(consultasList.?[status.name() == 'AGENDADA'])}">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-success mb-3">
+                    <div class="card-body">
+                        <h6><i class="bi bi-check2"></i> Concluídas</h6>
+                        <h3 th:text="${#lists.size(consultasList.?[status.name() == 'CONCLUIDA'])}">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-danger mb-3">
+                    <div class="card-body">
+                        <h6><i class="bi bi-x-circle"></i> Canceladas</h6>
+                        <h3 th:text="${#lists.size(consultasList.?[status.name() == 'CANCELADA'])}">0</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <div th:replace="fragments/footer :: footer"></div>
+    <div th:replace="fragments/footer :: common-scripts"></div>
+</body>
+
+</html>

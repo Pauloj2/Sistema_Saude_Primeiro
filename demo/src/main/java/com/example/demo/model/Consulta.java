@@ -2,6 +2,8 @@ package com.example.demo.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "consultas")
@@ -12,16 +14,20 @@ public class Consulta {
     private Long id;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "paciente_id")
+    @JoinColumn(name = "paciente_id", nullable = false)
     private Paciente paciente;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "medico_id")
+    @JoinColumn(name = "medico_id", nullable = false)
     private Medico medico;
 
     @OneToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "horario_id", unique = true)
+    @JoinColumn(name = "horario_id", unique = true, nullable = false)
     private HorarioDisponivel horario;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "consulta_diagnostico", joinColumns = @JoinColumn(name = "consulta_id"), inverseJoinColumns = @JoinColumn(name = "diagnostico_id"))
+    private Set<Diagnostico> diagnosticos = new HashSet<>();
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -43,7 +49,6 @@ public class Consulta {
         this.dataAtualizacao = LocalDateTime.now();
     }
 
-    // ---- Regras de negócio ----
     public void cancelar() {
         this.status = StatusConsulta.CANCELADA;
     }
@@ -52,7 +57,7 @@ public class Consulta {
         this.status = StatusConsulta.CONCLUIDA;
     }
 
-    // ---- Getters e Setters ----
+
     public Long getId() {
         return id;
     }
@@ -79,6 +84,14 @@ public class Consulta {
 
     public void setHorario(HorarioDisponivel horario) {
         this.horario = horario;
+    }
+
+    public Set<Diagnostico> getDiagnosticos() {
+        return diagnosticos;
+    }
+
+    public void setDiagnosticos(Set<Diagnostico> diagnosticos) {
+        this.diagnosticos = diagnosticos;
     }
 
     public StatusConsulta getStatus() {
