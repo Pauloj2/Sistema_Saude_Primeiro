@@ -11,6 +11,7 @@ public interface MedicoService {
     void deleteMedicoById(Long id);
     boolean existsByCrm(String crm);
 
+    long count();
     default List<Medico> findAll() {
         return getAllMedicos();
     }

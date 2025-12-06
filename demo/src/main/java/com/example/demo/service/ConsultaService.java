@@ -15,4 +15,5 @@ public interface ConsultaService {
     Optional<Consulta> findById(Long id);
     List<Consulta> findAll();
     Consulta save(Consulta consulta);
+    long count();
 }

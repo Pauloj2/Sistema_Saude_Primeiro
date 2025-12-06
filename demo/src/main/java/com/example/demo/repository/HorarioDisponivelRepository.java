@@ -13,4 +13,5 @@ public interface HorarioDisponivelRepository extends JpaRepository<HorarioDispon
     List<HorarioDisponivel> findByDisponivelTrue();
     List<HorarioDisponivel> findByMedicoId(Long medicoId);
     boolean existsByMedicoIdAndDataHora(Long medicoId, LocalDateTime dataHora);
+    long countByDisponivelTrue();
 }

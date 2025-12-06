@@ -32,6 +32,7 @@ public class MedicamentoServiceImpl implements MedicamentoService {
     @Override
     @Transactional
     public Medicamento atualizar(Long id, Medicamento dados) {
+
         Medicamento existente = buscarPorId(id);
 
         existente.setNome(dados.getNome());
@@ -44,7 +45,7 @@ public class MedicamentoServiceImpl implements MedicamentoService {
     public Medicamento buscarPorId(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Medicamento não encontrado."));
-    } 
+    }
 
     @Override
     public List<Medicamento> listarTodos() {
@@ -54,12 +55,17 @@ public class MedicamentoServiceImpl implements MedicamentoService {
     @Override
     @Transactional
     public void deletar(Long id) {
-        buscarPorId(id);
+        buscarPorId(id); 
         repository.deleteById(id);
     }
 
     @Override
     public boolean existePorNome(String nome) {
         return repository.existsByNome(nome);
+    }
+
+    @Override
+    public long count() {
+        return repository.count();
     }
 }

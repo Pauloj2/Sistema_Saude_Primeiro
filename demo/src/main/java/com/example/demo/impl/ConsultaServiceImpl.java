@@ -102,4 +102,10 @@ public class ConsultaServiceImpl implements ConsultaService {
     public Consulta save(Consulta consulta) {
         return consultaRepository.save(consulta);
     }
+
+    @Override
+    public long count() {
+        return consultaRepository.count();
+    }
+
 }

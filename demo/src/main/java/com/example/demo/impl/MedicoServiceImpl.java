@@ -43,4 +43,9 @@ public class MedicoServiceImpl implements MedicoService {
     public boolean existsByCrm(String crm) {
         return medicoRepository.existsByCrm(crm);
     }
+
+    @Override
+    public long count() {
+        return medicoRepository.count(); 
+    }
 }

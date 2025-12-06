@@ -2,6 +2,7 @@ package com.example.demo.impl;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.example.demo.model.HorarioDisponivel;
@@ -11,56 +12,45 @@ import com.example.demo.service.HorarioDisponivelService;
 @Service
 public class HorarioDisponivelServiceImpl implements HorarioDisponivelService {
 
-    // 🔑 Melhoria: Injeção de construtor em vez de @Autowired em campo
     private final HorarioDisponivelRepository horarioDisponivelRepository;
 
     public HorarioDisponivelServiceImpl(HorarioDisponivelRepository horarioDisponivelRepository) {
         this.horarioDisponivelRepository = horarioDisponivelRepository;
     }
 
-    // ----------------------------------------------------------------------
-    // 🔑 CORREÇÕES DE PADRÃO DE NOMECLATURA (Para funcionar com Controllers)
-    // ----------------------------------------------------------------------
-
     @Override
-    public List<HorarioDisponivel> findAll() { // Substitui getAllHorarioDisponivel
+    public List<HorarioDisponivel> findAll() {
         return horarioDisponivelRepository.findAll();
     }
 
     @Override
-    public List<HorarioDisponivel> findTodosDisponiveis() { // Substitui getHorariosDisponiveis
+    public List<HorarioDisponivel> findTodosDisponiveis() {
         return horarioDisponivelRepository.findByDisponivelTrue();
     }
 
     @Override
-    public List<HorarioDisponivel> findByMedicoId(Long medicoId) { // Substitui getHorariosByMedico
+    public List<HorarioDisponivel> findByMedicoId(Long medicoId) {
         return horarioDisponivelRepository.findByMedicoId(medicoId);
     }
 
     @Override
-    public HorarioDisponivel findById(long id) { // Substitui getHorarioDisponivelById
+    public HorarioDisponivel findById(long id) {
         return horarioDisponivelRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Horário não encontrado com id: " + id));
     }
 
     @Override
-    public void deleteById(long id) { // Substitui deleteHorarioDisponivelById
+    public void deleteById(long id) {
         horarioDisponivelRepository.deleteById(id);
     }
 
-    // ----------------------------------------------------------------------
-    // 🔑 CORREÇÃO DO MÉTODO SAVE
-    // ----------------------------------------------------------------------
-
     @Override
-    public void save(HorarioDisponivel horario) { // Substitui saveHorarioDisponivel
+    public void save(HorarioDisponivel horario) {
 
-        // VALIDAÇÃO: impedir horário em data passada
         if (horario.getDataHora().isBefore(LocalDateTime.now())) {
             throw new RuntimeException("Não é permitido cadastrar horários no passado.");
         }
 
-        // VALIDAÇÃO: impedir horários duplicados do mesmo médico
         boolean existe = horarioDisponivelRepository
                 .existsByMedicoIdAndDataHora(horario.getMedico().getId(), horario.getDataHora());
 
@@ -69,5 +59,15 @@ public class HorarioDisponivelServiceImpl implements HorarioDisponivelService {
         }
 
         horarioDisponivelRepository.save(horario);
+    }
+
+    @Override
+    public long count() {
+        return horarioDisponivelRepository.count();
+    }
+
+    @Override
+    public long countDisponiveis() {
+        return horarioDisponivelRepository.countByDisponivelTrue();
     }
 }
