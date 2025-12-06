@@ -55,7 +55,7 @@ public class MedicamentoServiceImpl implements MedicamentoService {
     @Override
     @Transactional
     public void deletar(Long id) {
-        buscarPorId(id); 
+        buscarPorId(id);
         repository.deleteById(id);
     }
 
@@ -68,4 +68,10 @@ public class MedicamentoServiceImpl implements MedicamentoService {
     public long count() {
         return repository.count();
     }
+
+    @Override
+    public List<Medicamento> buscarPorNome(String nome) {
+        return repository.findByNomeContainingIgnoreCase(nome);
+    }
+
 }

@@ -7,8 +7,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class CustomUserDetails implements UserDetails {
 
@@ -17,7 +17,7 @@ public class CustomUserDetails implements UserDetails {
 
     public CustomUserDetails(User user, Optional<Paciente> paciente) {
         this.user = user;
-        this.paciente = paciente;
+        this.paciente = paciente == null ? Optional.empty() : paciente;
     }
 
     public Optional<Paciente> getPaciente() {
@@ -25,14 +25,26 @@ public class CustomUserDetails implements UserDetails {
     }
 
     public boolean hasRole(String role) {
-        return user.getRoles().contains(role);
+        if (user.getRole() == null)
+            return false;
+        return user.getRole().equalsIgnoreCase(role);
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return user.getRoles().stream()
-                .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toList());
+
+        String role = user.getRole();
+
+        if (role == null || role.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Usuário sem ROLE definida: " + user.getEmail());
+        }
+
+        if (!role.startsWith("ROLE_")) {
+            role = "ROLE_" + role.toUpperCase();
+        }
+
+        return List.of(new SimpleGrantedAuthority(role));
     }
 
     @Override

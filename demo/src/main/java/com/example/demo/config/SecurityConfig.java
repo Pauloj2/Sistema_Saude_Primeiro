@@ -14,31 +14,37 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-                .csrf(csrf -> csrf.disable())
+            .csrf(csrf -> csrf.disable())
 
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login", "/register", "/css/**", "/js/**", "/images/**").permitAll()
+            .authorizeHttpRequests(auth -> auth
 
-                        .requestMatchers("/medico/**", "/medicamento/**", "/pacientes/**").hasRole("ATENDENTE")
+                .requestMatchers("/login", "/register", "/css/**", "/js/**", "/images/**").permitAll()
 
-                        .requestMatchers("/consultas/minhas").hasRole("PACIENTE")
+                .requestMatchers("/dashboard").hasAnyRole("PACIENTE", "ATENDENTE")
 
-                        .requestMatchers("/consultas/**", "/horarios/**").authenticated()
+                .requestMatchers("/medico/**", "/medicamento/**", "/pacientes/**", "/horarios/**")
+                    .hasRole("ATENDENTE")
 
-                        .anyRequest().denyAll())
+                .requestMatchers("/consultas/minhas").hasRole("PACIENTE")
 
-                .formLogin(form -> form
-                        .loginPage("/login")
-                        .defaultSuccessUrl("/", true)
-                        .failureUrl("/login?error=true")
-                        .permitAll())
+                .requestMatchers("/consultas/**").authenticated()
 
-                .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout")
-                        .permitAll());
+                .anyRequest().denyAll()
+        )
+
+        .formLogin(form -> form
+            .loginPage("/login")
+            .defaultSuccessUrl("/dashboard", true) // Redireciona para dashboard
+            .failureUrl("/login?error=true")
+            .permitAll()
+        )
+
+        .logout(logout -> logout
+            .logoutUrl("/logout")
+            .logoutSuccessUrl("/login?logout")
+            .permitAll()
+        );
 
         return http.build();
     }
-
 }

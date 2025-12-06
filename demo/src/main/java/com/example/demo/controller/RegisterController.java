@@ -10,8 +10,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.List;
-
 @Controller
 @RequestMapping("/register")
 public class RegisterController {
@@ -20,14 +18,14 @@ public class RegisterController {
     private final UserService userService;
 
     public RegisterController(PacienteService pacienteService,
-                              UserService userService) {
+            UserService userService) {
         this.pacienteService = pacienteService;
         this.userService = userService;
     }
 
     @GetMapping
     public String mostrarFormularioRegistro(Model model) {
-        model.addAttribute("registroDTO", new RegistroDTO()); 
+        model.addAttribute("registroDTO", new RegistroDTO());
         return "auth/register";
     }
 
@@ -49,20 +47,18 @@ public class RegisterController {
         User user = new User();
         user.setName(registroDTO.getNome());
         user.setEmail(registroDTO.getEmail());
-        
-        user.setPassword(registroDTO.getSenha()); 
-        user.setRoles(List.of("ROLE_PACIENTE"));
+        user.setPassword(registroDTO.getSenha());
+        user.setRole("ROLE_PACIENTE");
 
-        User savedUser = userService.save(user); 
+        User savedUser = userService.save(user);
 
-        Paciente novoPaciente = new Paciente();
-        novoPaciente.setNome(registroDTO.getNome());
-        novoPaciente.setCpf(registroDTO.getCpf());
-        novoPaciente.setTelefone(registroDTO.getTelefone());
-        
-        novoPaciente.setUser(savedUser); 
+        Paciente paciente = new Paciente();
+        paciente.setNome(registroDTO.getNome());
+        paciente.setCpf(registroDTO.getCpf());
+        paciente.setTelefone(registroDTO.getTelefone());
+        paciente.setUser(savedUser);
 
-        pacienteService.save(novoPaciente);
+        pacienteService.save(paciente);
 
         redirectAttributes.addFlashAttribute("sucesso", "Cadastro realizado com sucesso! Faça login.");
         return "redirect:/login";

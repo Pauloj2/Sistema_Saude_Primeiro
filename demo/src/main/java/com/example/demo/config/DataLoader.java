@@ -8,8 +8,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.List;
-
 @Configuration
 public class DataLoader {
 
@@ -31,12 +29,10 @@ public class DataLoader {
                 User atendenteUser = new User();
                 atendenteUser.setName("Atendente Master");
                 atendenteUser.setEmail("atendente@saudeprimeiro.com");
-                atendenteUser.setPassword("123456"); 
-                atendenteUser.setRoles(List.of("ROLE_ATENDENTE"));
-
+                atendenteUser.setPassword("123456");
+                atendenteUser.setRole("ROLE_ATENDENTE");
                 userService.save(atendenteUser);
             }
-
 
             if (!userService.emailExiste("paciente@saudeprimeiro.com")) {
                 System.out.println("Criando Paciente Inicial...");
@@ -45,7 +41,7 @@ public class DataLoader {
                 pacienteUser.setName("Paciente Teste");
                 pacienteUser.setEmail("paciente@saudeprimeiro.com");
                 pacienteUser.setPassword("123456");
-                pacienteUser.setRoles(List.of("ROLE_PACIENTE"));
+                pacienteUser.setRole("ROLE_PACIENTE"); 
 
                 User savedUser = userService.save(pacienteUser);
 
@@ -53,7 +49,6 @@ public class DataLoader {
                 paciente.setNome("Paciente Teste");
                 paciente.setCpf("11122233344");
                 paciente.setTelefone("999999999");
-
                 paciente.setUser(savedUser);
 
                 pacienteService.save(paciente);

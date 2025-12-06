@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 public class PacienteController {
 
     private final PacienteService pacienteService;
-    private final UserService userService; //
+    private final UserService userService; 
 
     public PacienteController(PacienteService pacienteService, UserService userService) {
         this.pacienteService = pacienteService;

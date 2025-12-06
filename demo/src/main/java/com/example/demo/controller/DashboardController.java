@@ -11,7 +11,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
-@PreAuthorize("hasRole('ATENDENTE')")
 public class DashboardController {
 
     private final MedicoService medicoService;
@@ -30,9 +29,9 @@ public class DashboardController {
         this.medicamentoService = medicamentoService;
     }
 
-    @GetMapping("/")
+    @GetMapping("/dashboard")
+    @PreAuthorize("hasAnyRole('PACIENTE', 'ATENDENTE')")
     public String dashboard(Model model) {
-
 
         long totalMedicos = medicoService.count();
         long totalHorarios = horarioService.count();
@@ -46,6 +45,6 @@ public class DashboardController {
         model.addAttribute("horariosAgendados", horariosAgendados);
         model.addAttribute("totalMedicamentos", totalMedicamentos);
 
-        return "dashboard"; 
+        return "dashboard";
     }
 }

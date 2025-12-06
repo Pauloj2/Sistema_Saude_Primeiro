@@ -6,12 +6,13 @@ import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.PacienteRepository;
 import com.example.demo.security.CustomUserDetails;
 import com.example.demo.service.UserService;
-import org.springframework.context.annotation.Lazy; 
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+
 @Service
 public class UserServiceImpl implements UserService, UserDetailsService {
 
@@ -19,7 +20,9 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     private final PacienteRepository pacienteRepo;
     private final PasswordEncoder encoder;
 
-    public UserServiceImpl(UserRepository userRepo, PacienteRepository pacienteRepo, @Lazy PasswordEncoder encoder) {
+    public UserServiceImpl(UserRepository userRepo,
+            PacienteRepository pacienteRepo,
+            @Lazy PasswordEncoder encoder) {
         this.userRepo = userRepo;
         this.pacienteRepo = pacienteRepo;
         this.encoder = encoder;
@@ -27,9 +30,16 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public User save(User user) {
+
+        if (user.getRole() != null && !user.getRole().startsWith("ROLE_")) {
+            user.setRole("ROLE_" + user.getRole().toUpperCase());
+        }
+
+        // Evita recriptografar senha já encriptada
         if (user.getPassword() != null && !user.getPassword().startsWith("$2a$")) {
             user.setPassword(encoder.encode(user.getPassword()));
         }
+
         return userRepo.save(user);
     }
 
@@ -49,9 +59,20 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         User user = userRepo.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Email não encontrado: " + email));
 
+        if (user.getRole() == null || user.getRole().isBlank()) {
+            throw new UsernameNotFoundException("Usuário sem ROLE válida: " + email);
+        }
+
+        String role = user.getRole();
+        if (!role.startsWith("ROLE_")) {
+            role = "ROLE_" + role.toUpperCase();
+            user.setRole(role);
+            userRepo.save(user); 
+        }
+
         Optional<Paciente> paciente = Optional.empty();
 
-        if (user.getRoles().contains("ROLE_PACIENTE")) {
+        if (role.equals("ROLE_PACIENTE")) {
             paciente = pacienteRepo.findByUser(user);
         }
 

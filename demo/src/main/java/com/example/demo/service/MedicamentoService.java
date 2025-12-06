@@ -13,4 +13,5 @@ public interface MedicamentoService {
     void deletar(Long id);
     boolean existePorNome(String nome);
     long count();
+    List<Medicamento> buscarPorNome(String nome);
 }

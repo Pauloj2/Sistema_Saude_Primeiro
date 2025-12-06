@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security6">
 
 <head>
     <meta charset="UTF-8">
@@ -10,92 +10,104 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
 
     <style>
-        body {
-            padding-top: 0;
-        }
-
-        @media (max-width: 991.98px) {
-            body {
-                padding-top: 70px;
-            }
-        }
-
         .hover-card:hover {
             transform: scale(1.03);
             transition: 0.2s;
-        }
-
-        .sidebar a.active {
-            background: rgba(255, 255, 255, 0.1);
         }
     </style>
 </head>
 
 <body>
 
+    <!-- BOTÃO MOBILE -->
     <button class="btn btn-primary d-lg-none position-fixed top-0 start-0 m-3" type="button" data-bs-toggle="offcanvas"
-        data-bs-target="#sidebar" style="z-index: 1050;">
+        data-bs-target="#sidebar" style="z-index:1050;">
         <i class="bi bi-list"></i>
     </button>
 
     <div class="container-fluid">
         <div class="row">
 
+            <!-- SIDEBAR -->
             <nav class="col-lg-2 d-none d-lg-block sidebar bg-dark p-0">
                 <div class="position-sticky pt-3">
 
-                    <div class="text-center p-3 border-bottom border-secondary">
-                        <a th:href="@{/}"
-                            class="d-flex align-items-center justify-content-center text-white text-decoration-none">
-                            <i class="bi bi-heart-pulse fs-4 me-2"></i>
-                            <h5 class="mb-0">Sistema Saúde</h5>
-                        </a>
+                    <!-- LOGO -->
+                    <div class="text-center p-3 border-bottom border-secondary text-white">
+                        <i class="bi bi-heart-pulse fs-4 me-2"></i>
+                        <span class="fs-5">Sistema Saúde</span>
                     </div>
 
                     <ul class="nav flex-column mt-3">
 
+                        <!-- DASHBOARD -->
                         <li class="nav-item">
-                            <a class="nav-link text-white active" th:href="@{/}">
+                            <a class="nav-link text-white active" th:href="@{/dashboard}">
                                 <i class="bi bi-speedometer2 me-2"></i> Dashboard
                             </a>
                         </li>
 
-                        <li class="nav-item mt-3 mb-2">
-                            <small class="text-muted px-3">GERENCIAMENTO</small>
+                        <!-- --------------- ÁREA ATENDENTE ---------------- -->
+                        <li class="nav-item mt-3 mb-2" sec:authorize="hasRole('ATENDENTE')">
+                            <small class="text-muted px-3">ADMINISTRAÇÃO</small>
                         </li>
 
-                        <li class="nav-item">
+                        <li class="nav-item" sec:authorize="hasRole('ATENDENTE')">
                             <a class="nav-link text-white" th:href="@{/medico}">
                                 <i class="bi bi-person-badge me-2"></i> Médicos
                             </a>
                         </li>
 
-                        <li class="nav-item">
+                        <li class="nav-item" sec:authorize="hasRole('ATENDENTE')">
                             <a class="nav-link text-white" th:href="@{/horarios}">
                                 <i class="bi bi-calendar-check me-2"></i> Horários
                             </a>
                         </li>
 
-                        <li class="nav-item">
+                        <li class="nav-item" sec:authorize="hasRole('ATENDENTE')">
                             <a class="nav-link text-white" th:href="@{/consultas}">
                                 <i class="bi bi-clipboard2-pulse me-2"></i> Consultas
                             </a>
                         </li>
 
-                        <li class="nav-item">
+                        <li class="nav-item" sec:authorize="hasRole('ATENDENTE')">
                             <a class="nav-link text-white" th:href="@{/diagnosticos}">
                                 <i class="bi bi-clipboard-heart me-2"></i> Diagnósticos
                             </a>
                         </li>
-                        <li class="nav-item">
+
+                        <li class="nav-item" sec:authorize="hasRole('ATENDENTE')">
                             <a class="nav-link text-white" th:href="@{/medicamentos}">
                                 <i class="bi bi-capsule me-2"></i> Medicamentos
                             </a>
                         </li>
 
-                        <li class="nav-item">
+                        <li class="nav-item" sec:authorize="hasRole('ATENDENTE')">
                             <a class="nav-link text-white" th:href="@{/estoque}">
                                 <i class="bi bi-box-seam me-2"></i> Estoque
+                            </a>
+                        </li>
+
+                        <!-- --------------- ÁREA PACIENTE ---------------- -->
+                        <li class="nav-item mt-3 mb-2" sec:authorize="hasRole('PACIENTE')">
+                            <small class="text-muted px-3">PACIENTE</small>
+                        </li>
+
+                        <li class="nav-item" sec:authorize="hasRole('PACIENTE')">
+                            <a class="nav-link text-white" th:href="@{/consultas/minhas}">
+                                <i class="bi bi-person-lines-fill me-2"></i> Minhas Consultas
+                            </a>
+                        </li>
+
+                        <li class="nav-item" sec:authorize="hasRole('PACIENTE')">
+                            <a class="nav-link text-white" th:href="@{/consultas/agendar}">
+                                <i class="bi bi-calendar-plus me-2"></i> Agendar Consulta
+                            </a>
+                        </li>
+
+                        <li class="nav-item" sec:authorize="hasRole('PACIENTE')">
+                            <a class="nav-link text-white" th:href="@{/medicamentos/consulta}">
+                                <i class="bi bi-search me-2"></i> Consultar Medicamentos
                             </a>
                         </li>
 
@@ -103,202 +115,158 @@
                 </div>
             </nav>
 
-            <div class="offcanvas offcanvas-start bg-dark" id="sidebar">
+            <!-- CONTEÚDO PRINCIPAL -->
+            <main class="col-lg-10 ms-sm-auto px-md-4">
 
-                <div class="offcanvas-header border-bottom border-secondary">
-                    <h5 class="offcanvas-title text-white">
-                        <i class="bi bi-heart-pulse me-2"></i> Sistema Saúde
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+                <!-- HEADER -->
+                <div class="bg-primary text-white rounded-3 p-4 mt-3 shadow-sm">
+                    <h2><i class="bi bi-speedometer2"></i> Dashboard</h2>
+                    <p class="lead mb-0">Bem-vindo ao Sistema de Saúde — Controle simples e eficiente.</p>
                 </div>
 
-                <div class="offcanvas-body p-0">
-                    <ul class="nav flex-column">
+                <!-- CARDS = APENAS ATENDENTE -->
+                <div class="row mb-4 mt-4" sec:authorize="hasRole('ATENDENTE')">
 
-                        <li class="nav-item">
-                            <a class="nav-link text-white" th:href="@{/}" data-bs-dismiss="offcanvas">
-                                <i class="bi bi-speedometer2 me-2"></i> Dashboard
-                            </a>
-                        </li>
+                    <div class="col-xl-3 col-md-6 mb-3">
+                        <div class="card shadow-sm hover-card text-center p-4">
+                            <i class="bi bi-people fs-1 text-primary"></i>
+                            <h5 class="mt-3">Médicos</h5>
+                            <div class="fs-2 fw-bold" th:text="${totalMedicos}">0</div>
+                        </div>
+                    </div>
 
-                        <li class="nav-item mt-3 mb-2">
-                            <small class="text-muted px-3">GERENCIAMENTO</small>
-                        </li>
+                    <div class="col-xl-3 col-md-6 mb-3">
+                        <div class="card shadow-sm hover-card text-center p-4">
+                            <i class="bi bi-calendar-week fs-1 text-success"></i>
+                            <h5 class="mt-3">Horários Disponíveis</h5>
+                            <div class="fs-2 fw-bold" th:text="${horariosDisponiveis}">0</div>
+                        </div>
+                    </div>
 
-                        <li class="nav-item">
-                            <a class="nav-link text-white" th:href="@{/medico}" data-bs-dismiss="offcanvas">
-                                <i class="bi bi-person-badge me-2"></i> Médicos
-                            </a>
-                        </li>
+                    <div class="col-xl-3 col-md-6 mb-3">
+                        <div class="card shadow-sm hover-card text-center p-4">
+                            <i class="bi bi-clipboard2-pulse fs-1 text-warning"></i>
+                            <h5 class="mt-3">Consultas Agendadas</h5>
+                            <div class="fs-2 fw-bold" th:text="${horariosAgendados}">0</div>
+                        </div>
+                    </div>
 
-                        <li class="nav-item">
-                            <a class="nav-link text-white" th:href="@{/horarios}" data-bs-dismiss="offcanvas">
-                                <i class="bi bi-calendar-check me-2"></i> Horários
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link text-white" th:href="@{/consultas}" data-bs-dismiss="offcanvas">
-                                <i class="bi bi-clipboard2-pulse me-2"></i> Consultas
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link text-white" th:href="@{/diagnosticos}" data-bs-dismiss="offcanvas">
-                                <i class="bi bi-clipboard-heart me-2"></i> Diagnósticos
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link text-white" th:href="@{/medicamentos}" data-bs-dismiss="offcanvas">
-                                <i class="bi bi-capsule me-2"></i> Medicamentos
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link text-white" th:href="@{/estoque}" data-bs-dismiss="offcanvas">
-                                <i class="bi bi-box-seam me-2"></i> Estoque
-                            </a>
-                        </li>
-
-                    </ul>
+                    <div class="col-xl-3 col-md-6 mb-3">
+                        <div class="card shadow-sm hover-card text-center p-4">
+                            <i class="bi bi-capsule fs-1 text-danger"></i>
+                            <h5 class="mt-3">Medicamentos</h5>
+                            <div class="fs-2 fw-bold" th:text="${totalMedicamentos}">0</div>
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <main class="col-lg-10 ms-sm-auto px-md-4 main-content">
+                <!-- COLUNA ATENDENTE -->
+                <div class="row">
 
-                <div class="container-fluid py-4">
+                    <div class="col-lg-6 mb-4" sec:authorize="hasRole('ATENDENTE')">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0"><i class="bi bi-lightning-fill"></i> Ações Rápidas</h5>
+                            </div>
+                            <div class="card-body p-4">
+                                <div class="d-grid gap-3">
 
-                    <div class="bg-primary text-white rounded-3 p-4 mb-4 shadow-sm">
-                        <h2><i class="bi bi-speedometer2"></i> Dashboard de Gerenciamento</h2>
-                        <p class="lead mb-0">Bem-vindo ao sistema de gestão de saúde.</p>
+                                    <a href="/consultas/agendar" class="btn btn-outline-primary p-3 text-start">
+                                        <i class="bi bi-calendar-plus me-3"></i> Agendar Consulta
+                                    </a>
+
+                                    <a href="/diagnosticos/novo" class="btn btn-outline-primary p-3 text-start">
+                                        <i class="bi bi-clipboard-heart me-3"></i> Novo Diagnóstico
+                                    </a>
+
+                                    <a href="/medicamentos/novo" class="btn btn-outline-primary p-3 text-start">
+                                        <i class="bi bi-capsule me-3"></i> Novo Medicamento
+                                    </a>
+
+                                    <a href="/estoque/entrada" class="btn btn-outline-primary p-3 text-start">
+                                        <i class="bi bi-box-arrow-in-down me-3"></i> Registrar Entrada de Estoque
+                                    </a>
+
+                                    <a href="/estoque/saida" class="btn btn-outline-primary p-3 text-start">
+                                        <i class="bi bi-box-arrow-left me-3"></i> Registrar Saída de Estoque
+                                    </a>
+
+                                    <a href="/estoque/ajuste" class="btn btn-outline-primary p-3 text-start">
+                                        <i class="bi bi-sliders me-3"></i> Ajuste de Estoque
+                                    </a>
+
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="row mb-4">
+                    <!-- COLUNA PACIENTE -->
+                    <div class="col-12 mb-4" sec:authorize="hasRole('PACIENTE')">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0"><i class="bi bi-person"></i> Ações do Paciente</h5>
+                            </div>
+                            <div class="card-body p-4">
+                                <div class="d-grid gap-3">
 
-                        <div class="col-xl-3 col-md-6 mb-3">
-                            <div class="card shadow-sm hover-card text-center p-4">
-                                <i class="bi bi-people fs-1 text-primary"></i>
-                                <h5 class="mt-3">Médicos</h5>
-                                <div class="fs-2 fw-bold" th:text="${totalMedicos}">0</div>
+                                    <a href="/consultas/agendar" class="btn btn-outline-success p-3 text-start">
+                                        <i class="bi bi-calendar-plus me-3"></i> Agendar Consulta
+                                    </a>
+
+                                    <a href="/consultas/minhas" class="btn btn-outline-success p-3 text-start">
+                                        <i class="bi bi-clipboard2-pulse me-3"></i> Minhas Consultas
+                                    </a>
+
+                                    <a href="/medicamentos/consulta" class="btn btn-outline-success p-3 text-start">
+                                        <i class="bi bi-search me-3"></i> Consultar Medicamentos
+                                    </a>
+
+                                </div>
                             </div>
                         </div>
-
-                        <div class="col-xl-3 col-md-6 mb-3">
-                            <div class="card shadow-sm hover-card text-center p-4">
-                                <i class="bi bi-calendar-week fs-1 text-success"></i>
-                                <h5 class="mt-3">Horários Disponíveis</h5>
-                                <div class="fs-2 fw-bold" th:text="${horariosDisponiveis}">0</div>
-                            </div>
-                        </div>
-
-                        <div class="col-xl-3 col-md-6 mb-3">
-                            <div class="card shadow-sm hover-card text-center p-4">
-                                <i class="bi bi-clipboard2-pulse fs-1 text-warning"></i>
-                                <h5 class="mt-3">Consultas Agendadas</h5>
-                                <div class="fs-2 fw-bold" th:text="${horariosAgendados}">0</div>
-                            </div>
-                        </div>
-
-                        <div class="col-xl-3 col-md-6 mb-3">
-                            <div class="card shadow-sm hover-card text-center p-4">
-                                <i class="bi bi-capsule fs-1 text-danger"></i>
-                                <h5 class="mt-3">Medicamentos</h5>
-                                <div class="fs-2 fw-bold" th:text="${totalMedicamentos}">0</div>
-                            </div>
-                        </div>
-
                     </div>
 
-                    <div class="row">
+                    <div class="col-12 col-lg-6 mb-4">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-info-circle-fill"></i> Informações do Sistema
+                                </h5>
+                            </div>
+                            <div class="card-body p-4">
 
-                        <div class="col-lg-6 mb-4">
-                            <div class="card shadow-sm">
-                                <div class="card-header bg-primary text-white">
-                                    <h5 class="mb-0"><i class="bi bi-lightning-fill"></i> Ações Rápidas</h5>
-                                </div>
-                                <div class="card-body p-4">
-                                    <div class="d-grid gap-3">
+                                <h6 class="mb-2">Sobre</h6>
+                                <p>
+                                    Sistema completo para gestão de saúde, incluindo médicos, horários, consultas,
+                                    diagnósticos, medicamentos e estoque.
+                                </p>
 
-                                        <a href="/consultas/agendar" class="btn btn-outline-primary text-start p-3">
-                                            <i class="bi bi-calendar-plus fs-5 me-3"></i>
-                                            Agendar Consulta
-                                        </a>
+                                <h6 class="mt-4 mb-2">Recursos</h6>
+                                <ul class="list-unstyled">
+                                    <li><i class="bi bi-check-circle text-success"></i> Agendamento de consultas</li>
+                                    <li><i class="bi bi-check-circle text-success"></i> Gestão de diagnósticos</li>
+                                    <li><i class="bi bi-check-circle text-success"></i> Controle de estoque</li>
+                                    <li><i class="bi bi-check-circle text-success"></i> Painel administrativo</li>
+                                </ul>
 
-                                        <a href="/diagnosticos/novo" class="btn btn-outline-primary text-start p-3">
-                                            <i class="bi bi-clipboard-heart fs-5 me-3"></i>
-                                            Novo Diagnóstico
-                                        </a>
+                                <hr>
 
-                                        <a href="/medicamentos/novo" class="btn btn-outline-primary text-start p-3">
-                                            <i class="bi bi-capsule fs-5 me-3"></i>
-                                            Novo Medicamento
-                                        </a>
+                                <small class="text-muted">
+                                    <i class="bi bi-code-slash"></i> Versão 1.0 — Desenvolvido por Paulo
+                                </small>
 
-                                        <a href="/estoque/entrada" class="btn btn-outline-primary text-start p-3">
-                                            <i class="bi bi-box-arrow-in-down fs-5 me-3"></i>
-                                            Registrar Entrada de Estoque
-                                        </a>
-
-                                        <a href="/estoque/saida" class="btn btn-outline-primary text-start p-3">
-                                            <i class="bi bi-box-arrow-left fs-5 me-3"></i>
-                                            Registrar Saída de Estoque
-                                        </a>
-
-                                        <a href="/estoque/ajuste" class="btn btn-outline-primary text-start p-3">
-                                            <i class="bi bi-sliders fs-5 me-3"></i>
-                                            Ajuste de Estoque
-                                        </a>
-
-                                    </div>
-                                </div>
                             </div>
                         </div>
-
-                        <div class="col-lg-6 mb-4">
-                            <div class="card shadow-sm h-100">
-                                <div class="card-header bg-success text-white">
-                                    <h5 class="mb-0"><i class="bi bi-info-circle-fill"></i> Informações do Sistema</h5>
-                                </div>
-                                <div class="card-body p-4">
-
-                                    <h6 class="mb-2">Sobre</h6>
-                                    <p>
-                                        Sistema de gestão de saúde completo, com módulos para médicos, horários,
-                                        consultas, diagnósticos, medicamentos e controle de estoque.
-                                    </p>
-
-                                    <h6 class="mt-4 mb-2">Recursos</h6>
-                                    <ul class="list-unstyled">
-                                        <li><i class="bi bi-check-circle text-success"></i> Agendamento de consultas
-                                        </li>
-                                        <li><i class="bi bi-check-circle text-success"></i> Gestão de diagnósticos</li>
-                                        <li><i class="bi bi-check-circle text-success"></i> Cadastro de medicamentos
-                                        </li>
-                                        <li><i class="bi bi-check-circle text-success"></i> Controle de estoque</li>
-                                        <li><i class="bi bi-check-circle text-success"></i> Painéis administrativos</li>
-                                    </ul>
-
-                                    <hr>
-
-                                    <small class="text-muted">
-                                        <i class="bi bi-code-slash"></i> Versão 1.0 — Desenvolvido por Paulo
-                                    </small>
-
-                                </div>
-                            </div>
-                        </div>
-
                     </div>
 
                 </div>
 
             </main>
-
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 
 </html>

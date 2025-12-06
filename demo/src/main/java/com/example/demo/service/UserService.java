@@ -5,9 +5,7 @@ import java.util.Optional;
 
 public interface UserService {
 
-    User save(User user); 
-
-    Optional<User> findByEmailOptional(String email); 
-    
-    boolean emailExiste(String email); 
+    User save(User user);
+    Optional<User> findByEmailOptional(String email);
+    boolean emailExiste(String email);
 }
