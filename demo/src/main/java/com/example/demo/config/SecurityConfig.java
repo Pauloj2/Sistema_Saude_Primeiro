@@ -18,54 +18,91 @@ public class SecurityConfig {
 
                                 .authorizeHttpRequests(auth -> auth
 
-                                                // ✅ PUBLICO
                                                 .requestMatchers(
                                                                 "/login",
                                                                 "/register",
+                                                                "/favicon.ico",
+                                                                "/error",
                                                                 "/css/**",
                                                                 "/js/**",
-                                                                "/images/**")
+                                                                "/images/**",
+                                                                "/fonts/**",
+                                                                "/webjars/**")
                                                 .permitAll()
 
-                                                // ✅ DASHBOARD
+                                                .requestMatchers(
+                                                                "/fragments/**")
+                                                .permitAll()
+
+                                                .requestMatchers("/api/chatbot").permitAll()
+
                                                 .requestMatchers("/dashboard").hasAnyRole("PACIENTE", "ATENDENTE")
 
-                                                // ✅ CHATBOT TELA
                                                 .requestMatchers("/chatbot").hasAnyRole("PACIENTE", "ATENDENTE")
 
-                                                // ✅ CHATBOT API (MUITO IMPORTANTE)
-                                                .requestMatchers("/api/chatbot").permitAll()
-                                                
-                                                .requestMatchers("/medicamento/consulta")
+                                                .requestMatchers(
+                                                                "/medico/listar",
+                                                                "/medico/disponiveis")
                                                 .hasAnyRole("PACIENTE", "ATENDENTE")
 
-                                                // ✅ ATENDENTE
                                                 .requestMatchers(
-                                                                "/medico/**",
-                                                                "/medicamento/**",
-                                                                "/pacientes/**",
-                                                                "/horarios/**",
-                                                                "/estoque/**",
-                                                                "/diagnosticos/**")
+                                                                "/medico/novo",
+                                                                "/medico/editar/**",
+                                                                "/medico/excluir/**",
+                                                                "/medico/salvar")
                                                 .hasRole("ATENDENTE")
 
-                                                // ✅ PACIENTE
-                                                .requestMatchers("/consultas/minhas").hasRole("PACIENTE")
+                                                .requestMatchers(
+                                                                "/consultas/minhas",
+                                                                "/consultas/agendar",
+                                                                "/consultas/detalhes/**",
+                                                                "/consultas/cancelar/**")
+                                                .hasRole("PACIENTE")
 
-                                                // ✅ CONSULTAS GERAIS
-                                                .requestMatchers("/consultas/**").authenticated()
+                                                .requestMatchers(
+                                                                "/consultas/listar",
+                                                                "/consultas/gerenciar/**",
+                                                                "/consultas/atualizar/**")
+                                                .hasRole("ATENDENTE")
 
-                                                .anyRequest().denyAll())
+                                                .requestMatchers("/horarios/**").hasRole("ATENDENTE")
+
+                                                .requestMatchers(
+                                                                "/medicamento/consulta", // Pacientes podem consultar
+                                                                "/medicamento/listar" // Atendentes podem listar
+                                                ).hasAnyRole("PACIENTE", "ATENDENTE")
+
+                                                .requestMatchers(
+                                                                "/medicamento/novo",
+                                                                "/medicamento/editar/**",
+                                                                "/medicamento/excluir/**",
+                                                                "/medicamento/salvar")
+                                                .hasRole("ATENDENTE")
+
+                                                .requestMatchers("/estoque/**").hasRole("ATENDENTE")
+
+                                                .requestMatchers("/diagnosticos/**").hasRole("ATENDENTE")
+
+                                                .requestMatchers("/pacientes/**").hasRole("ATENDENTE")
+
+                                                .anyRequest().authenticated())
 
                                 .formLogin(form -> form
                                                 .loginPage("/login")
                                                 .defaultSuccessUrl("/dashboard", true)
+                                                .failureUrl("/login?error=true")
                                                 .permitAll())
 
                                 .logout(logout -> logout
                                                 .logoutUrl("/logout")
                                                 .logoutSuccessUrl("/login?logout")
-                                                .permitAll());
+                                                .invalidateHttpSession(true)
+                                                .clearAuthentication(true)
+                                                .deleteCookies("JSESSIONID")
+                                                .permitAll())
+
+                                .exceptionHandling(exception -> exception
+                                                .accessDeniedPage("/acesso-negado"));
 
                 return http.build();
         }

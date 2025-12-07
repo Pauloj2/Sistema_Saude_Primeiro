@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security6">
+
+<head th:replace="fragments/header :: head">
+    <title>Layout Base</title>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div th:replace="fragments/sidebar :: sidebar"></div>
+
+            <main class="col-lg-10 ms-sm-auto px-md-4 main-content">
+                <div th:replace="${content}"></div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <div th:replace="fragments/footer :: common-scripts"></div>
+</body>
+
+</html>

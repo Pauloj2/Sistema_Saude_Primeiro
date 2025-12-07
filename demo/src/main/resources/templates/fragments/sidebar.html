@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security6">
+<th:block th:fragment="sidebar">
+
+    <style>
+        /* Estilo para ícones coloridos */
+        .sidebar .nav-link {
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left-color: var(--icon-color, #73C7E3);
+        }
+
+        .sidebar .nav-link.active {
+            background-color: rgba(115, 199, 227, 0.15);
+            border-left-color: #73C7E3;
+        }
+
+        .sidebar .nav-link i {
+            width: 24px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar .nav-link:hover i {
+            transform: scale(1.2);
+        }
+
+        /* Cores específicas para cada ícone */
+        .icon-dashboard {
+            color: #FFD700;
+        }
+
+        .icon-medicos {
+            color: #5AB7D3;
+        }
+
+        .icon-horarios {
+            color: #73C7E3;
+        }
+
+        .icon-consultas {
+            color: #CFBA40;
+        }
+
+        .icon-diagnosticos {
+            color: #FF6B6B;
+        }
+
+        .icon-medicamentos {
+            color: #4ECDC4;
+        }
+
+        .icon-estoque {
+            color: #95E1D3;
+        }
+
+        .icon-minhas-consultas {
+            color: #A8E6CF;
+        }
+
+        .icon-agendar {
+            color: #FFD3B6;
+        }
+
+        .icon-pesquisar {
+            color: #FFAAA5;
+        }
+
+        .icon-chatbot {
+            color: #FF8B94;
+        }
+
+        .icon-logout {
+            color: #CFBA40;
+        }
+
+        /* Animação de pulso para o chatbot */
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        .icon-chatbot {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        /* Seção de administração */
+        .nav-item small {
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        /* Scrollbar personalizada */
+        .sidebar .position-sticky::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar .position-sticky::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar .position-sticky::-webkit-scrollbar-thumb {
+            background: rgba(115, 199, 227, 0.5);
+            border-radius: 10px;
+        }
+
+        .sidebar .position-sticky::-webkit-scrollbar-thumb:hover {
+            background: rgba(115, 199, 227, 0.8);
+        }
+
+        /* Botão de logout estilizado */
+        .btn-logout {
+            background: linear-gradient(135deg, #CFBA40, #B8A338);
+            border: none;
+            transition: all 0.3s ease;
+            color: #2E4A70 !important;
+            font-weight: 600;
+        }
+
+        .btn-logout:hover {
+            background: linear-gradient(135deg, #B8A338, #A08F30);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(207, 186, 64, 0.4);
+            color: #2E4A70 !important;
+        }
+
+        .btn-logout i {
+            color: #2E4A70 !important;
+        }
+    </style>
+
+    <!-- BOTÃO MOBILE -->
+    <button class="btn btn-primary d-lg-none position-fixed top-0 start-0 m-3" type="button" data-bs-toggle="offcanvas"
+        data-bs-target="#sidebar" style="z-index:1050;">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- OFFCANVAS MOBILE -->
+    <div class="offcanvas offcanvas-start d-lg-none" tabindex="-1" id="sidebar" aria-labelledby="sidebarLabel">
+        <div class="offcanvas-header bg-dark text-white">
+            <h5 class="offcanvas-title" id="sidebarLabel">
+                <i class="bi bi-heart-pulse fs-4 me-2" style="color: #FF6B6B;"></i>
+                <span class="fs-5">Sistema Saúde</span>
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"
+                aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body bg-dark p-0">
+            <div th:replace="~{fragments/sidebar :: menu-content}"></div>
+        </div>
+    </div>
+
+    <!-- SIDEBAR DESKTOP -->
+    <nav class="col-lg-2 d-none d-lg-block sidebar bg-dark p-0">
+        <div th:replace="~{fragments/sidebar :: menu-content}"></div>
+    </nav>
+
+</th:block>
+
+<th:block th:fragment="menu-content">
+    <div class="position-sticky pt-3 vh-100" style="overflow-y: auto;">
+
+        <!-- LOGO -->
+        <div class="text-center p-3 border-bottom border-secondary text-white">
+            <i class="bi bi-heart-pulse fs-4 me-2" style="color: #FF6B6B;"></i>
+            <span class="fs-5">Sistema Saúde</span>
+        </div>
+
+        <ul class="nav flex-column mt-3">
+
+            <!-- DASHBOARD -->
+            <li class="nav-item">
+                <a class="nav-link text-white" th:href="@{/dashboard}">
+                    <i class="bi bi-speedometer2 me-2 icon-dashboard"></i> Dashboard
+                </a>
+            </li>
+
+            <!-- --------------- ÁREA ATENDENTE ---------------- -->
+            <li class="nav-item mt-3 mb-2" sec:authorize="hasRole('ATENDENTE')">
+                <small class="text-muted px-3">ADMINISTRAÇÃO</small>
+            </li>
+
+            <li class="nav-item" sec:authorize="hasRole('ATENDENTE')">
+                <a class="nav-link text-white" th:href="@{/medico}" style="--icon-color: #5AB7D3;">
+                    <i class="bi bi-person-badge me-2 icon-medicos"></i> Médicos
+                </a>
+            </li>
+
+            <li class="nav-item" sec:authorize="hasRole('ATENDENTE')">
+                <a class="nav-link text-white" th:href="@{/horarios}" style="--icon-color: #73C7E3;">
+                    <i class="bi bi-calendar-check me-2 icon-horarios"></i> Horários
+                </a>
+            </li>
+
+            <li class="nav-item" sec:authorize="hasRole('ATENDENTE')">
+                <a class="nav-link text-white" th:href="@{/consultas}" style="--icon-color: #CFBA40;">
+                    <i class="bi bi-clipboard2-pulse me-2 icon-consultas"></i> Consultas
+                </a>
+            </li>
+
+            <li class="nav-item" sec:authorize="hasRole('ATENDENTE')">
+                <a class="nav-link text-white" th:href="@{/diagnosticos}" style="--icon-color: #FF6B6B;">
+                    <i class="bi bi-clipboard-heart me-2 icon-diagnosticos"></i> Diagnósticos
+                </a>
+            </li>
+
+            <li class="nav-item" sec:authorize="hasRole('ATENDENTE')">
+                <a class="nav-link text-white" th:href="@{/medicamento}" style="--icon-color: #4ECDC4;">
+                    <i class="bi bi-capsule me-2 icon-medicamentos"></i> Medicamentos
+                </a>
+            </li>
+
+            <li class="nav-item" sec:authorize="hasRole('ATENDENTE')">
+                <a class="nav-link text-white" th:href="@{/estoque}" style="--icon-color: #95E1D3;">
+                    <i class="bi bi-box-seam me-2 icon-estoque"></i> Estoque
+                </a>
+            </li>
+
+            <!-- --------------- ÁREA PACIENTE ---------------- -->
+            <li class="nav-item mt-3 mb-2" sec:authorize="hasRole('PACIENTE')">
+                <small class="text-muted px-3">PACIENTE</small>
+            </li>
+
+            <li class="nav-item" sec:authorize="hasRole('PACIENTE')">
+                <a class="nav-link text-white" th:href="@{/consultas/minhas}" style="--icon-color: #A8E6CF;">
+                    <i class="bi bi-person-lines-fill me-2 icon-minhas-consultas"></i> Minhas Consultas
+                </a>
+            </li>
+
+            <li class="nav-item" sec:authorize="hasRole('PACIENTE')">
+                <a class="nav-link text-white" th:href="@{/consultas/agendar}" style="--icon-color: #FFD3B6;">
+                    <i class="bi bi-calendar-plus me-2 icon-agendar"></i> Agendar Consulta
+                </a>
+            </li>
+
+            <li class="nav-item" sec:authorize="hasRole('PACIENTE')">
+                <a class="nav-link text-white" th:href="@{/medicamento/consulta}" style="--icon-color: #FFAAA5;">
+                    <i class="bi bi-search me-2 icon-pesquisar"></i> Consultar Medicamentos
+                </a>
+            </li>
+
+            <!-- CHATBOT (TODOS) -->
+            <li class="nav-item">
+                <a class="nav-link text-white" th:href="@{/chatbot}" style="--icon-color: #FF8B94;">
+                    <i class="bi bi-robot me-2 icon-chatbot"></i> ChatBot
+                </a>
+            </li>
+
+            <!-- LOGOUT -->
+            <li class="nav-item mt-auto border-top border-secondary pt-3">
+                <form th:action="@{/logout}" method="post" class="px-3">
+                    <button type="submit" class="btn btn-logout btn-sm w-100">
+                        <i class="bi bi-box-arrow-right me-2"></i> Sair
+                    </button>
+                </form>
+            </li>
+
+        </ul>
+    </div>
+</th:block>
