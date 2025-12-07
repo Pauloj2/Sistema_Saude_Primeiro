@@ -45,7 +45,7 @@ public class HorarioDisponivelController {
 
         if (result.hasErrors()) {
             // 🔑 CORREÇÃO: Usando findAll()
-            model.addAttribute("medicos", medicoService.findAll());
+            model.addAttribute("medicos", medicoService.getAllMedicos());
             return "horario/create";
         }
 

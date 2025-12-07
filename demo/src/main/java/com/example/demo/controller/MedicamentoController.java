@@ -2,9 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.model.Medicamento;
 import com.example.demo.service.MedicamentoService;
-
 import java.util.List;
-
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,7 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
-@RequestMapping("/medicamentos")
+@RequestMapping("/medicamento") // ← MUDADO PARA SINGULAR
+@PreAuthorize("hasRole('ATENDENTE')")
 public class MedicamentoController {
 
     private final MedicamentoService service;
@@ -21,21 +20,18 @@ public class MedicamentoController {
         this.service = service;
     }
 
-    // 🔥 NOVO – consulta para PACIENTE
+    // 🔥 CONSULTA para PACIENTE
     @GetMapping("/consulta")
     @PreAuthorize("hasAnyRole('PACIENTE','ATENDENTE')")
     public String consultaMedicamentos(
             @RequestParam(name = "q", required = false) String termo,
             Model model) {
-
         if (termo != null && !termo.isBlank()) {
             model.addAttribute("resultados", service.buscarPorNome(termo));
         } else {
             model.addAttribute("resultados", List.of());
         }
-
         model.addAttribute("query", termo);
-
         return "estoque/consulta";
     }
 
@@ -62,7 +58,7 @@ public class MedicamentoController {
         } catch (Exception e) {
             ra.addFlashAttribute("mensagemErro", e.getMessage());
         }
-        return "redirect:/medicamentos";
+        return "redirect:/medicamento"; // ← ATUALIZADO
     }
 
     @GetMapping("/editar/{id}")
@@ -81,7 +77,7 @@ public class MedicamentoController {
         } catch (Exception e) {
             ra.addFlashAttribute("mensagemErro", e.getMessage());
         }
-        return "redirect:/medicamentos";
+        return "redirect:/medicamento"; // ← ATUALIZADO
     }
 
     @GetMapping("/deletar/{id}")
@@ -93,6 +89,6 @@ public class MedicamentoController {
         } catch (Exception e) {
             ra.addFlashAttribute("mensagemErro", e.getMessage());
         }
-        return "redirect:/medicamentos";
+        return "redirect:/medicamento"; // ← ATUALIZADO
     }
 }

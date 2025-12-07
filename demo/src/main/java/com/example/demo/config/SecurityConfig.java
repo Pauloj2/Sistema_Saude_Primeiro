@@ -10,41 +10,63 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        @Bean
+        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        http
-            .csrf(csrf -> csrf.disable())
+                http
+                                .csrf(csrf -> csrf.disable())
 
-            .authorizeHttpRequests(auth -> auth
+                                .authorizeHttpRequests(auth -> auth
 
-                .requestMatchers("/login", "/register", "/css/**", "/js/**", "/images/**").permitAll()
+                                                // ✅ PUBLICO
+                                                .requestMatchers(
+                                                                "/login",
+                                                                "/register",
+                                                                "/css/**",
+                                                                "/js/**",
+                                                                "/images/**")
+                                                .permitAll()
 
-                .requestMatchers("/dashboard").hasAnyRole("PACIENTE", "ATENDENTE")
+                                                // ✅ DASHBOARD
+                                                .requestMatchers("/dashboard").hasAnyRole("PACIENTE", "ATENDENTE")
 
-                .requestMatchers("/medico/**", "/medicamento/**", "/pacientes/**", "/horarios/**")
-                    .hasRole("ATENDENTE")
+                                                // ✅ CHATBOT TELA
+                                                .requestMatchers("/chatbot").hasAnyRole("PACIENTE", "ATENDENTE")
 
-                .requestMatchers("/consultas/minhas").hasRole("PACIENTE")
+                                                // ✅ CHATBOT API (MUITO IMPORTANTE)
+                                                .requestMatchers("/api/chatbot").permitAll()
+                                                
+                                                .requestMatchers("/medicamento/consulta")
+                                                .hasAnyRole("PACIENTE", "ATENDENTE")
 
-                .requestMatchers("/consultas/**").authenticated()
+                                                // ✅ ATENDENTE
+                                                .requestMatchers(
+                                                                "/medico/**",
+                                                                "/medicamento/**",
+                                                                "/pacientes/**",
+                                                                "/horarios/**",
+                                                                "/estoque/**",
+                                                                "/diagnosticos/**")
+                                                .hasRole("ATENDENTE")
 
-                .anyRequest().denyAll()
-        )
+                                                // ✅ PACIENTE
+                                                .requestMatchers("/consultas/minhas").hasRole("PACIENTE")
 
-        .formLogin(form -> form
-            .loginPage("/login")
-            .defaultSuccessUrl("/dashboard", true) // Redireciona para dashboard
-            .failureUrl("/login?error=true")
-            .permitAll()
-        )
+                                                // ✅ CONSULTAS GERAIS
+                                                .requestMatchers("/consultas/**").authenticated()
 
-        .logout(logout -> logout
-            .logoutUrl("/logout")
-            .logoutSuccessUrl("/login?logout")
-            .permitAll()
-        );
+                                                .anyRequest().denyAll())
 
-        return http.build();
-    }
+                                .formLogin(form -> form
+                                                .loginPage("/login")
+                                                .defaultSuccessUrl("/dashboard", true)
+                                                .permitAll())
+
+                                .logout(logout -> logout
+                                                .logoutUrl("/logout")
+                                                .logoutSuccessUrl("/login?logout")
+                                                .permitAll());
+
+                return http.build();
+        }
 }

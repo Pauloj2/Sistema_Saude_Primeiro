@@ -2,10 +2,12 @@ package com.example.demo.controller;
 
 import com.example.demo.service.MedicoService;
 import com.example.demo.service.HorarioDisponivelService;
+import com.example.demo.security.CustomUserDetails;
 import com.example.demo.service.ConsultaService;
 import com.example.demo.service.MedicamentoService;
 
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,7 +33,8 @@ public class DashboardController {
 
     @GetMapping("/dashboard")
     @PreAuthorize("hasAnyRole('PACIENTE', 'ATENDENTE')")
-    public String dashboard(Model model) {
+    public String dashboard(Model model,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         long totalMedicos = medicoService.count();
         long totalHorarios = horarioService.count();
@@ -45,6 +48,17 @@ public class DashboardController {
         model.addAttribute("horariosAgendados", horariosAgendados);
         model.addAttribute("totalMedicamentos", totalMedicamentos);
 
+        model.addAttribute("medicos", medicoService.getAllMedicos());
+
+        if (userDetails.hasRole("PACIENTE")) {
+
+            model.addAttribute(
+                    "consultasPaciente",
+                    consultaService.buscarConsultasPorPaciente(
+                            userDetails.getPaciente().get()));
+        }
+
         return "dashboard";
     }
+
 }

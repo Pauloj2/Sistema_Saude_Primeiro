@@ -108,4 +108,20 @@ public class ConsultaServiceImpl implements ConsultaService {
         return consultaRepository.count();
     }
 
+    @Override
+    public long countConsultasPorPaciente(Long pacienteId) {
+        return consultaRepository.countByPacienteId(pacienteId);
+    }
+
+    @Override
+    public Optional<Consulta> buscarProximaConsulta(Long pacienteId) {
+        List<Consulta> result = consultaRepository.findProximaConsulta(pacienteId);
+        return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
+    }
+
+    @Override
+    public long countConsultasRealizadas(Long pacienteId) {
+        return consultaRepository.countConsultasRealizadas(pacienteId);
+    }
+
 }

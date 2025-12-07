@@ -10,8 +10,8 @@ public interface MedicoService {
     void saveMedico(Medico medico);
     void deleteMedicoById(Long id);
     boolean existsByCrm(String crm);
-
     long count();
+    long countMedicos();
     default List<Medico> findAll() {
         return getAllMedicos();
     }

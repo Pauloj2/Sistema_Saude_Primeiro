@@ -16,4 +16,8 @@ public interface ConsultaService {
     List<Consulta> findAll();
     Consulta save(Consulta consulta);
     long count();
+    long countConsultasPorPaciente(Long pacienteId);
+    Optional<Consulta> buscarProximaConsulta(Long pacienteId);
+    long countConsultasRealizadas(Long pacienteId);
+
 }

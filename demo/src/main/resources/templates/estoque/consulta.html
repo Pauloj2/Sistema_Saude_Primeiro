@@ -20,13 +20,15 @@
 
         <h2 class="text-primary mb-4">🔍 Consultar Medicamentos</h2>
 
-        th:action="@{/medicamentos/consulta}"
+        <!-- FORMULÁRIO CORRETO -->
+        <form th:action="@{/medicamento/consulta}" method="get">
 
-        <div class="input-group mb-3">
-            <input type="text" class="form-control" name="q" th:value="${query}"
-                placeholder="Digite o nome do medicamento...">
-            <button class="btn btn-primary">Buscar</button>
-        </div>
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" name="q" th:value="${query}"
+                    placeholder="Digite o nome do medicamento...">
+                <button class="btn btn-primary" type="submit">Buscar</button>
+            </div>
+
         </form>
 
         <div th:if="${not #lists.isEmpty(resultados)}">

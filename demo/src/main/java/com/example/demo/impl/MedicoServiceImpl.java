@@ -46,6 +46,12 @@ public class MedicoServiceImpl implements MedicoService {
 
     @Override
     public long count() {
-        return medicoRepository.count(); 
+        return medicoRepository.count();
     }
+
+    @Override
+    public long countMedicos() {
+        return medicoRepository.count();
+    }
+
 }
