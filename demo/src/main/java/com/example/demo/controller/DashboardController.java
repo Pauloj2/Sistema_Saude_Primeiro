@@ -1,9 +1,11 @@
 package com.example.demo.controller;
 
-import com.example.demo.service.MedicoService;
-import com.example.demo.service.HorarioDisponivelService;
+import com.example.demo.model.Consulta;
+import com.example.demo.model.Paciente;
 import com.example.demo.security.CustomUserDetails;
 import com.example.demo.service.ConsultaService;
+import com.example.demo.service.HorarioDisponivelService;
+import com.example.demo.service.MedicoService;
 import com.example.demo.service.MedicamentoService;
 
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -11,6 +13,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 
 @Controller
 public class DashboardController {
@@ -36,29 +42,49 @@ public class DashboardController {
     public String dashboard(Model model,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-        long totalMedicos = medicoService.count();
-        long totalHorarios = horarioService.count();
-        long horariosDisponiveis = horarioService.countDisponiveis();
-        long horariosAgendados = consultaService.count();
-        long totalMedicamentos = medicamentoService.count();
-
-        model.addAttribute("totalMedicos", totalMedicos);
-        model.addAttribute("totalHorarios", totalHorarios);
-        model.addAttribute("horariosDisponiveis", horariosDisponiveis);
-        model.addAttribute("horariosAgendados", horariosAgendados);
-        model.addAttribute("totalMedicamentos", totalMedicamentos);
-
+        model.addAttribute("totalMedicos", medicoService.count());
+        model.addAttribute("totalHorarios", horarioService.count());
+        model.addAttribute("horariosDisponiveis", horarioService.countDisponiveis());
+        model.addAttribute("horariosAgendados", consultaService.count());
+        model.addAttribute("totalMedicamentos", medicamentoService.count());
         model.addAttribute("medicos", medicoService.getAllMedicos());
 
-        if (userDetails.hasRole("PACIENTE")) {
+        if (userDetails.hasRole("ROLE_PACIENTE")) {
+
+            Paciente paciente = userDetails.getPaciente()
+                    .orElseThrow(() -> new RuntimeException("Paciente não encontrado."));
+
+            Long pacienteId = paciente.getId();
+
+            long totalConsultasPaciente = consultaService.countConsultasPorPaciente(pacienteId);
+            model.addAttribute("totalConsultasPaciente", totalConsultasPaciente);
+
+            long consultasRealizadas = consultaService.countConsultasRealizadas(pacienteId);
+            model.addAttribute("consultasRealizadas", consultasRealizadas);
+
+            Optional<Consulta> proximaOpt = consultaService.buscarProximaConsulta(pacienteId);
+
+            if (proximaOpt.isPresent()) {
+                Consulta proxima = proximaOpt.get();
+
+                long diasRestantes = ChronoUnit.DAYS.between(
+                        LocalDateTime.now(),
+                        proxima.getHorario().getDataHora());
+
+                if (diasRestantes < 0)
+                    diasRestantes = 0;
+
+                model.addAttribute("temProximaConsulta", true);
+                model.addAttribute("diasRestantes", diasRestantes);
+            } else {
+                model.addAttribute("temProximaConsulta", false);
+            }
 
             model.addAttribute(
                     "consultasPaciente",
-                    consultaService.buscarConsultasPorPaciente(
-                            userDetails.getPaciente().get()));
+                    consultaService.buscarConsultasPorPaciente(paciente));
         }
 
         return "dashboard";
     }
-
 }

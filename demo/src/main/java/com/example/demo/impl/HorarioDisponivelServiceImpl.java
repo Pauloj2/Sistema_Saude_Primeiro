@@ -58,6 +58,8 @@ public class HorarioDisponivelServiceImpl implements HorarioDisponivelService {
             throw new RuntimeException("Este horário já existe para este médico.");
         }
 
+        horario.setDisponivel(true);
+
         horarioDisponivelRepository.save(horario);
     }
 

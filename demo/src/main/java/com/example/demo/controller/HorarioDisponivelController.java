@@ -25,7 +25,6 @@ public class HorarioDisponivelController {
 
     @GetMapping
     public String listarHorarios(Model model) {
-        // 🔑 CORREÇÃO: Usando findAll()
         model.addAttribute("horariosList", horarioService.findAll());
         return "horario/index";
     }
@@ -33,7 +32,6 @@ public class HorarioDisponivelController {
     @GetMapping("/create")
     public String mostrarFormularioCadastro(Model model) {
         model.addAttribute("horario", new HorarioDisponivel());
-        // 🔑 CORREÇÃO: Usando findAll()
         model.addAttribute("medicos", medicoService.findAll());
         return "horario/create";
     }
@@ -44,16 +42,13 @@ public class HorarioDisponivelController {
             Model model) {
 
         if (result.hasErrors()) {
-            // 🔑 CORREÇÃO: Usando findAll()
             model.addAttribute("medicos", medicoService.getAllMedicos());
             return "horario/create";
         }
 
         try {
-            // 🔑 CORREÇÃO: Usando save()
             horarioService.save(horario);
         } catch (RuntimeException e) {
-            // 🔑 CORREÇÃO: Usando findAll()
             model.addAttribute("medicos", medicoService.findAll());
             model.addAttribute("erro", e.getMessage());
             return "horario/create";
@@ -65,11 +60,9 @@ public class HorarioDisponivelController {
     @GetMapping("/edit/{id}")
     public String mostrarFormularioEdicao(@PathVariable Long id, Model model) {
 
-        // 🔑 CORREÇÃO: Usando findById()
         HorarioDisponivel horario = horarioService.findById(id);
 
         model.addAttribute("horario", horario);
-        // 🔑 CORREÇÃO: Usando findAll()
         model.addAttribute("medicos", medicoService.findAll());
         return "horario/edit";
     }
@@ -81,14 +74,12 @@ public class HorarioDisponivelController {
             Model model) {
 
         if (result.hasErrors()) {
-            // 🔑 CORREÇÃO: Usando findAll()
             model.addAttribute("medicos", medicoService.findAll());
             return "horario/edit";
         }
 
         try {
             horario.setId(id);
-            // 🔑 CORREÇÃO: Usando save()
             horarioService.save(horario);
         } catch (RuntimeException e) {
             // 🔑 CORREÇÃO: Usando findAll()
@@ -102,14 +93,12 @@ public class HorarioDisponivelController {
 
     @GetMapping("/delete/{id}")
     public String excluirHorario(@PathVariable Long id) {
-        // 🔑 CORREÇÃO: Usando deleteById()
         horarioService.deleteById(id);
         return "redirect:/horarios";
     }
 
     @GetMapping("/disponiveis")
     public String listarHorariosDisponiveis(Model model) {
-        // 🔑 CORREÇÃO: Usando findTodosDisponiveis() (método customizado correto)
         model.addAttribute("horariosList", horarioService.findTodosDisponiveis());
         return "horario/disponiveis";
     }
@@ -118,7 +107,7 @@ public class HorarioDisponivelController {
     public String listarPorMedico(@PathVariable Long id, Model model) {
         // NOTA: Presume-se que o MedicoService tem um método getMedicoById(id)
         model.addAttribute("horariosList", horarioService.findByMedicoId(id));
-        model.addAttribute("medico", medicoService.findById(id)); // 🔑 CORREÇÃO: Usando findById
+        model.addAttribute("medico", medicoService.findById(id)); 
         return "horario/por-medico";
     }
 }

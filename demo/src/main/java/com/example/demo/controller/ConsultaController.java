@@ -52,7 +52,6 @@ public class ConsultaController {
         return "consulta/listar-consultas";
     }
 
-    // MINHAS CONSULTAS (PACIENTE)
     @GetMapping("/minhas")
     @PreAuthorize("hasRole('PACIENTE')")
     public String minhasConsultas(Authentication auth, Model model) {
@@ -67,7 +66,6 @@ public class ConsultaController {
         return "consulta/minhas-consultas";
     }
 
-    // FORMULÁRIO DE AGENDAMENTO
     @GetMapping("/agendar")
     @PreAuthorize("hasAnyRole('PACIENTE', 'ATENDENTE')")
     public String agendarForm(Authentication auth, Model model) {
@@ -85,7 +83,6 @@ public class ConsultaController {
         return "consulta/agendar-consulta";
     }
 
-    // PROCESSAR AGENDAMENTO
     @PostMapping("/agendar")
     @PreAuthorize("isAuthenticated()")
     public String agendar(
@@ -132,7 +129,6 @@ public class ConsultaController {
         }
     }
 
-    // 🔵 EDITAR CONSULTA (GET)
     @GetMapping("/edit/{id}")
     @PreAuthorize("hasRole('ATENDENTE')")
     public String editarConsulta(@PathVariable Long id, Model model) {
@@ -142,13 +138,11 @@ public class ConsultaController {
 
         model.addAttribute("consulta", consulta);
 
-        // envia todos os diagnósticos para o select multiple
         model.addAttribute("diagnosticosList", diagnosticoService.listarTodos());
 
         return "consulta/editar-consulta";
     }
 
-    // 🔵 SALVAR CONSULTA EDITADA (POST)
     @PostMapping("/update/{id}")
     @PreAuthorize("hasRole('ATENDENTE')")
     public String atualizarConsulta(
@@ -161,11 +155,9 @@ public class ConsultaController {
             Consulta consulta = consultaService.findById(id)
                     .orElseThrow(() -> new RuntimeException("Consulta não encontrada"));
 
-            // Atualiza campos básicos
             consulta.setObservacoes(dados.getObservacoes());
             consulta.setStatus(dados.getStatus());
 
-            // Atualiza diagnósticos
             if (diagnosticosIds != null && !diagnosticosIds.isEmpty()) {
                 consulta.setDiagnosticos(
                         new HashSet<>(diagnosticoService.findByIds(diagnosticosIds)));
@@ -184,7 +176,6 @@ public class ConsultaController {
         }
     }
 
-    // CANCELAR CONSULTA
     @GetMapping("/cancelar/{id}")
     @PreAuthorize("hasAnyRole('PACIENTE', 'ATENDENTE')")
     public String cancelar(
@@ -196,19 +187,18 @@ public class ConsultaController {
 
         try {
 
+            Consulta consulta = consultaService.findById(id)
+                    .orElseThrow(() -> new AgendamentoException("Consulta não encontrada."));
+
             if (principal.hasRole("ROLE_PACIENTE")) {
 
                 Paciente paciente = principal.getPaciente()
                         .orElseThrow(() -> new RuntimeException("Paciente não encontrado."));
 
-                Consulta consulta = consultaService.findById(id)
-                        .orElseThrow(() -> new AgendamentoException("Consulta não encontrada."));
-
                 if (!consulta.getPaciente().getId().equals(paciente.getId())) {
                     attributes.addFlashAttribute("mensagemErro",
                             "Você não pode cancelar consultas de outro paciente.");
-
-                    return "redirect:/consultas/minhas";
+                    return "redirect:/dashboard";
                 }
             }
 
@@ -220,8 +210,19 @@ public class ConsultaController {
             attributes.addFlashAttribute("mensagemErro", e.getMessage());
         }
 
-        return principal.hasRole("ROLE_PACIENTE")
-                ? "redirect:/consultas/minhas"
-                : "redirect:/consultas";
+        return "redirect:/dashboard";
     }
+
+    @GetMapping("/detalhes/{id}")
+    @PreAuthorize("hasAnyRole('PACIENTE', 'ATENDENTE')")
+    public String detalhesConsulta(@PathVariable Long id, Model model) {
+
+        Consulta consulta = consultaService.findById(id)
+                .orElseThrow(() -> new RuntimeException("Consulta não encontrada"));
+
+        model.addAttribute("consulta", consulta);
+
+        return "consulta/detalhes-consulta";
+    }
+
 }

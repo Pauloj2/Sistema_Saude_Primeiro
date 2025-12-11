@@ -318,10 +318,8 @@
 <body>
     <div class="container-fluid">
         <div class="row">
-            <!-- SIDEBAR -->
             <div th:replace="~{fragments/sidebar :: sidebar}"></div>
 
-            <!-- CONTEÚDO PRINCIPAL -->
             <main class="col-lg-10 ms-sm-auto px-0 main-content">
                 <div class="content-container">
                     <div class="page-header">
@@ -367,20 +365,25 @@
                                         00/00/0000 00:00
                                     </td>
                                     <td data-label="Status">
-                                        <span th:switch="${c.status}">
-                                            <span th:case="T(com.example.demo.model.StatusConsulta).AGENDADA">
+                                        <span th:switch="${c.status.name()}">
+
+                                            <span th:case="'AGENDADA'">
                                                 <span class="status-indicator agendada"></span>
                                                 <span class="badge badge-agendada">Agendada</span>
                                             </span>
-                                            <span th:case="T(com.example.demo.model.StatusConsulta).CONCLUIDA">
+
+                                            <span th:case="'CONCLUIDA'">
                                                 <span class="status-indicator concluida"></span>
                                                 <span class="badge badge-concluida">Concluída</span>
                                             </span>
-                                            <span th:case="T(com.example.demo.model.StatusConsulta).CANCELADA">
+
+                                            <span th:case="'CANCELADA'">
                                                 <span class="status-indicator cancelada"></span>
                                                 <span class="badge badge-cancelada">Cancelada</span>
                                             </span>
+
                                         </span>
+
                                     </td>
                                     <td data-label="Observações" class="observacoes-cell"
                                         th:text="${c.observacoes != null ? c.observacoes : 'Sem observações'}"
@@ -406,7 +409,6 @@
                         </table>
                     </div>
 
-                    <!-- ESTATÍSTICAS -->
                     <div class="row mt-5" th:if="${!#lists.isEmpty(consultasList)}">
                         <div class="col-md-4 mb-3">
                             <div class="card stats-card border-0 shadow-sm h-100"
@@ -414,7 +416,7 @@
                                 <div class="card-body">
                                     <h6 class="card-subtitle mb-2">Agendadas</h6>
                                     <h3 class="card-title" style="color: var(--secondary-blue);">
-                                        [[${consultasList.?[#this.status.name() == 'AGENDADA'].size()}]]
+                                        [[${consultasList.?[status.name() == 'AGENDADA'].size()}]]
                                     </h3>
                                     <p class="card-text small text-muted mb-0">Consultas marcadas para o futuro</p>
                                 </div>
@@ -426,7 +428,7 @@
                                 <div class="card-body">
                                     <h6 class="card-subtitle mb-2">Concluídas</h6>
                                     <h3 class="card-title" style="color: var(--dark-blue);">
-                                        [[${consultasList.?[#this.status.name() == 'CONCLUIDA'].size()}]]
+                                        [[${consultasList.?[status.name() == 'CONCLUIDA'].size()}]]
                                     </h3>
                                     <p class="card-text small text-muted mb-0">Consultas já realizadas</p>
                                 </div>
@@ -438,7 +440,7 @@
                                 <div class="card-body">
                                     <h6 class="card-subtitle mb-2">Canceladas</h6>
                                     <h3 class="card-title" style="color: #E74C3C;">
-                                        [[${consultasList.?[#this.status.name() == 'CANCELADA'].size()}]]
+                                        [[${consultasList.?[status.name() == 'CANCELADA'].size()}]]
                                     </h3>
                                     <p class="card-text small text-muted mb-0">Consultas canceladas</p>
                                 </div>
@@ -446,7 +448,6 @@
                         </div>
                     </div>
 
-                    <!-- INFORMAÇÕES -->
                     <div class="row mt-4" th:if="${!#lists.isEmpty(consultasList)}">
                         <div class="col-12">
                             <div class="card border-0 shadow-sm" style="background-color: rgba(240, 242, 242, 0.5);">

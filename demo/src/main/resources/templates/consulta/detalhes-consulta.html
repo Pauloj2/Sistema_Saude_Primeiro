@@ -1,59 +1,86 @@
-<!-- detalhes-consulta.html -->
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="fragments/header :: head"></head>
+<head th:replace="~{fragments/header :: head}"></head>
 
 <body>
-    <div th:replace="fragments/header :: header"></div>
+    <div th:replace="~{fragments/header :: header}"></div>
 
     <main class="container mt-4">
         <div class="card shadow">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h4 class="mb-0"><i class="bi bi-list-check"></i> Detalhes da Consulta</h4>
                 <div>
-                    <a class="btn btn-outline-secondary btn-sm" th:href="@{/consultas}"><i class="bi bi-arrow-left"></i>
-                        Voltar</a>
+                    <a class="btn btn-outline-secondary btn-sm" th:href="@{/consultas}">
+                        <i class="bi bi-arrow-left"></i> Voltar
+                    </a>
                 </div>
             </div>
+
             <div class="card-body">
                 <div class="row g-3">
+
                     <div class="col-md-6">
                         <h6>Paciente</h6>
-                        <p class="mb-1"><strong
-                                th:text="${consulta.paciente != null ? consulta.paciente.nome : '-'}">Nome</strong></p>
+
+                        <p class="mb-1">
+                            <strong th:text="${consulta.paciente != null ? consulta.paciente.nome : '-'}">
+                                Nome
+                            </strong>
+                        </p>
+
                         <p class="text-muted mb-0"
-                            th:text="${consulta.paciente != null ? consulta.paciente.email : ''}">email</p>
-                        <p class="text-muted" th:text="${consulta.paciente != null ? consulta.paciente.cpf : ''}">cpf
+                            th:text="${consulta.paciente != null ? consulta.paciente.telefone : ''}">
+                            Telefone
+                        </p>
+
+                        <p class="text-muted" th:text="${consulta.paciente != null ? consulta.paciente.cpf : ''}">
+                            CPF
                         </p>
                     </div>
 
                     <div class="col-md-6">
                         <h6>Médico</h6>
-                        <p class="mb-1"><strong
-                                th:text="${consulta.medico != null ? consulta.medico.nome : '-'}">Dr(a).</strong></p>
+
+                        <p class="mb-1">
+                            <strong th:text="${consulta.medico != null ? consulta.medico.nome : '-'}">
+                                Dr(a).
+                            </strong>
+                        </p>
+
                         <p class="text-muted" th:text="${consulta.medico != null ? consulta.medico.especialidade : ''}">
-                            especialidade</p>
+                            Especialidade
+                        </p>
                     </div>
 
                     <div class="col-md-4">
                         <h6>Data / Hora</h6>
-                        <p th:text="${#temporals.format(consulta.horario.dataHora, 'dd/MM/yyyy HH:mm')}">00/00/0000
-                            00:00</p>
+                        <p th:text="${#temporals.format(consulta.horario.dataHora, 'dd/MM/yyyy HH:mm')}">
+                            00/00/0000 00:00
+                        </p>
                     </div>
 
                     <div class="col-md-4">
                         <h6>Status</h6>
                         <p>
-                            <span th:switch="${consulta.status}">
-                                <span th:case="T(com.example.demo.model.StatusConsulta).AGENDADA"
-                                    class="badge badge-agendada px-3 py-2">Agendada</span>
-                                <span th:case="T(com.example.demo.model.StatusConsulta).CONCLUIDA"
-                                    class="badge badge-concluida px-3 py-2">Concluída</span>
-                                <span th:case="T(com.example.demo.model.StatusConsulta).CANCELADA"
-                                    class="badge badge-cancelada px-3 py-2">Cancelada</span>
-                                <span th:case="*"><span class="badge bg-secondary"
-                                        th:text="${consulta.status}">—</span></span>
+                            <span th:switch="${consulta.status.name()}">
+
+                                <span th:case="'AGENDADA'" class="badge badge-agendada px-3 py-2">
+                                    Agendada
+                                </span>
+
+                                <span th:case="'CONCLUIDA'" class="badge badge-concluida px-3 py-2">
+                                    Concluída
+                                </span>
+
+                                <span th:case="'CANCELADA'" class="badge badge-cancelada px-3 py-2">
+                                    Cancelada
+                                </span>
+
+                                <span th:case="*">
+                                    <span class="badge bg-secondary">—</span>
+                                </span>
+
                             </span>
                         </p>
                     </div>
@@ -66,33 +93,39 @@
                     <div class="col-12">
                         <h6>Observações</h6>
                         <div class="p-3 border rounded"
-                            th:text="${consulta.observacoes != null ? consulta.observacoes : '—'}">Observações</div>
+                            th:text="${consulta.observacoes != null ? consulta.observacoes : '—'}">
+                            Observações
+                        </div>
                     </div>
+
                 </div>
             </div>
 
             <div class="card-footer d-flex justify-content-end gap-2">
+
                 <a class="btn btn-info" th:href="@{/consultas/detalhes/pdf/{id}(id=${consulta.id})}"
-                    th:if="${#authorization.expression('hasRole(''ATENDENTE'') or hasRole(''ADMIN'')') }">
+                    th:if="${#authorization.expression('hasRole(''ATENDENTE'') or hasRole(''ADMIN'')')}">
                     <i class="bi bi-printer"></i> Imprimir/PDF
                 </a>
 
-                <!-- Editar se ainda agendada -->
                 <a class="btn btn-warning"
-                    th:if="${consulta.status.name() == 'AGENDADA' and #authorization.expression('hasRole(''ATENDENTE'')') }"
-                    th:href="@{/consultas/edit/{id}(id=${consulta.id})}"><i class="bi bi-pencil"></i> Editar</a>
+                    th:if="${consulta.status.name() == 'AGENDADA' and #authorization.expression('hasRole(''ATENDENTE'')')}"
+                    th:href="@{/consultas/edit/{id}(id=${consulta.id})}">
+                    <i class="bi bi-pencil"></i> Editar
+                </a>
 
-                <!-- Cancelar -->
                 <a class="btn btn-danger" th:if="${consulta.status.name() == 'AGENDADA'}"
                     th:href="@{/consultas/cancelar/{id}(id=${consulta.id})}"
-                    th:onclick="|return confirm('Deseja cancelar esta consulta?')|"><i class="bi bi-x-circle"></i>
-                    Cancelar</a>
+                    th:onclick="|return confirm('Deseja cancelar esta consulta?')|">
+                    <i class="bi bi-x-circle"></i> Cancelar
+                </a>
+
             </div>
         </div>
     </main>
 
-    <div th:replace="fragments/footer :: footer"></div>
-    <div th:replace="fragments/footer :: common-scripts"></div>
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    <div th:replace="~{fragments/footer :: common-scripts}"></div>
 </body>
 
 </html>

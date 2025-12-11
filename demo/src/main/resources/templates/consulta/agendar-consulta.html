@@ -1,100 +1,92 @@
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
 
-<head>
-    <meta charset="UTF-8" />
-    <title>Agendar Consulta</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-
-    <style>
-        .required::after {
-            content: " *";
-            color: red;
-        }
-    </style>
-</head>
+<head th:replace="~{fragments/header :: head}"></head>
 
 <body>
 
-    <div th:replace="fragments/header :: header"></div>
+    <div class="container-fluid">
+        <div class="row">
 
-    <div class="container pt-4">
-        <div class="card shadow">
-            <div class="card-header bg-primary text-white">
-                <h2 class="mb-0"><i class="bi bi-calendar-plus"></i> Agendar Consulta</h2>
-            </div>
+            <div th:replace="~{fragments/sidebar :: sidebar}"></div>
 
-            <div class="card-body">
+            <main class="col-lg-10 ms-sm-auto px-md-4 main-content">
 
-                <!-- Mensagens -->
-                <div th:if="${mensagemErro}" class="alert alert-danger" th:text="${mensagemErro}"></div>
+                <div class="pt-4">
 
-                <form th:action="@{/consultas/save}" th:object="${consulta}" method="POST" class="needs-validation"
-                    novalidate>
+                    <div class="card shadow">
+                        <div class="card-header bg-primary text-white">
+                            <h2 class="mb-0">
+                                <i class="bi bi-calendar-plus"></i> Agendar Consulta
+                            </h2>
+                        </div>
 
-                    <!-- SOMENTE PARA ROLE_ATENDENTE -->
-                    <div th:if="${#authorization.expression('hasRole(''ATENDENTE'')')}">
-                        <h5 class="text-secondary mt-2"><i class="bi bi-person"></i> Selecionar Paciente</h5>
+                        <div class="card-body">
 
-                        <div class="mb-3">
-                            <label class="required">Paciente</label>
-                            <select th:field="*{paciente}" class="form-select" required>
-                                <option value="">Selecione...</option>
-                                <option th:each="p : ${pacientes}" th:value="${p.id}"
-                                    th:text="${p.nome + ' - ' + p.cpf}">
-                                </option>
-                            </select>
+                            <div th:if="${mensagemErro}" class="alert alert-danger" th:text="${mensagemErro}"></div>
+
+                            <form th:action="@{/consultas/agendar}" method="POST">
+                                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}"
+                                    th:value="${_csrf.token}" />
+
+                                <div class="mb-3" th:if="${#authorization.expression('hasRole(''ATENDENTE'')')}">
+                                    <label class="required">Paciente</label>
+                                    <select name="pacienteId" class="form-select" required>
+                                        <option value="">Selecione...</option>
+                                        <option th:each="p : ${pacientes}" th:value="${p.id}"
+                                            th:text="${p.nome + ' - ' + p.cpf}">
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="required">Médico</label>
+                                    <select id="medicoSelect" name="medicoId" class="form-select" required
+                                        onchange="filtrarHorarios()">
+                                        <option value="">Selecione um médico...</option>
+                                        <option th:each="m : ${medicos}" th:value="${m.id}"
+                                            th:text="${m.nome + ' — ' + m.especialidade}">
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="required">Horário</label>
+                                    <select id="horarioSelect" name="horarioId" class="form-select" required>
+                                        <option value="">Selecione...</option>
+                                        <option th:each="h : ${horarios}" th:value="${h.id}"
+                                            th:attr="data-medico-id=${h.medico.id}"
+                                            th:text="${#temporals.format(h.dataHora, 'dd/MM/yyyy HH:mm')}">
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label>Observações</label>
+                                    <textarea name="observacoes" class="form-control" rows="4"></textarea>
+                                </div>
+
+                                <div class="text-center mt-4">
+                                    <button type="submit" class="btn btn-success btn-lg">
+                                        Agendar
+                                    </button>
+
+                                    <a th:href="@{/consultas}" class="btn btn-secondary btn-lg">
+                                        Cancelar
+                                    </a>
+                                </div>
+
+                            </form>
+
                         </div>
                     </div>
 
-                    <!-- PARA PACIENTE LOGADO NÃO MOSTRAR O CAMPO -->
-                    <input th:if="${#authorization.expression('hasRole(''PACIENTE'')')}" type="hidden"
-                        th:field="*{paciente}" />
+                </div>
 
-                    <h5 class="text-secondary"><i class="bi bi-hospital"></i> Dados da Consulta</h5>
-
-                    <!-- Médico -->
-                    <div class="mb-3">
-                        <label class="required">Médico</label>
-                        <select id="medicoSelect" th:field="*{medico}" class="form-select" required
-                            onchange="filtrarHorarios()">
-                            <option value="">Selecione um médico...</option>
-                            <option th:each="m : ${medicos}" th:value="${m.id}"
-                                th:text="${m.nome + ' — ' + m.especialidade}">
-                            </option>
-                        </select>
-                    </div>
-
-                    <!-- Horário -->
-                    <div class="mb-3">
-                        <label class="required">Horário Disponível</label>
-                        <select id="horarioSelect" th:field="*{horario}" class="form-select" required>
-                            <option value="">Selecione um horário...</option>
-                            <option th:each="h : ${horarios}" th:value="${h.id}" th:attr="data-medico-id=${h.medico.id}"
-                                th:text="${#temporals.format(h.dataHora, 'dd/MM/yyyy HH:mm')}">
-                            </option>
-                        </select>
-                    </div>
-
-                    <!-- Observações -->
-                    <div class="mb-3">
-                        <label>Observações</label>
-                        <textarea th:field="*{observacoes}" class="form-control" rows="4"
-                            placeholder="Descreva sintomas ou outras informações relevantes"></textarea>
-                    </div>
-
-                    <!-- Botões -->
-                    <div class="text-center mt-4">
-                        <button class="btn btn-success btn-lg"><i class="bi bi-check"></i> Agendar</button>
-                        <a href="/consultas" class="btn btn-secondary btn-lg"><i class="bi bi-x"></i> Cancelar</a>
-                    </div>
-
-                </form>
-            </div>
+            </main>
         </div>
     </div>
 
-    <!-- Script: Filtrar horários pelo médico -->
     <script>
         function filtrarHorarios() {
             let medicoId = document.getElementById("medicoSelect").value;

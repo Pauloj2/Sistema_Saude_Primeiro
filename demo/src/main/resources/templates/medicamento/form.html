@@ -23,12 +23,13 @@
             Novo Medicamento
         </h2>
 
-        <!-- ALERTAS -->
         <div th:if="${mensagemErro}" class="alert alert-danger" th:text="${mensagemErro}"></div>
 
         <form
-            th:action="@{${medicamento.id == null} ? '/medicamentos/salvar' : '/medicamentos/atualizar/' + ${medicamento.id}}"
+            th:action="@{${medicamento.id} == null ? '/medicamento/salvar' : '/medicamento/atualizar/' + ${medicamento.id}}"
             th:object="${medicamento}" method="post">
+
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
             <input type="hidden" th:field="*{id}" />
 
@@ -42,10 +43,15 @@
                 <input type="text" class="form-control" th:field="*{unidade}" maxlength="50" required>
             </div>
 
+            <div class="mb-3">
+                <label class="form-label">Estoque Atual:</label>
+                <input type="number" class="form-control" th:field="*{estoqueAtual}" min="0">
+            </div>
+
             <hr>
 
             <div class="d-flex justify-content-between">
-                <a href="/medicamentos" class="btn btn-secondary">Voltar</a>
+                <a th:href="@{/medicamento}" class="btn btn-secondary">Voltar</a>
                 <button type="submit" class="btn btn-primary">
                     Salvar
                 </button>

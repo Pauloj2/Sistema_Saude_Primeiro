@@ -20,7 +20,6 @@ public class MedicamentoController {
         this.service = service;
     }
 
-    // 🔥 CONSULTA para PACIENTE
     @GetMapping("/consulta")
     @PreAuthorize("hasAnyRole('PACIENTE','ATENDENTE')")
     public String consultaMedicamentos(

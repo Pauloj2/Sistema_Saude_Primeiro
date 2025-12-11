@@ -4,6 +4,7 @@ import com.example.demo.exception.AgendamentoException;
 import com.example.demo.model.Consulta;
 import com.example.demo.model.HorarioDisponivel;
 import com.example.demo.model.Paciente;
+import com.example.demo.model.StatusConsulta;
 import com.example.demo.repository.ConsultaRepository;
 import com.example.demo.repository.HorarioDisponivelRepository;
 import com.example.demo.service.ConsultaService;
@@ -74,7 +75,7 @@ public class ConsultaServiceImpl implements ConsultaService {
             throw new AgendamentoException("Cancelamento só é permitido com 24 horas de antecedência.");
         }
 
-        consulta.cancelar();
+        consulta.setStatus(StatusConsulta.CANCELADA);
         consultaRepository.save(consulta);
 
         HorarioDisponivel horario = consulta.getHorario();
